@@ -1,6 +1,9 @@
 import { VerletNode } from '../physics/VerletNode.js';
 import { VerletChain } from '../physics/VerletChain.js';
 import { Vector2D } from '../utils/Vector2D.js';
+import { BulgeManager } from './BulgeManager.js';
+import { DeathAnimation } from './DeathAnimation.js';
+import { RenderSnake } from './RenderSnake.js';
 
 export class Snake {
     constructor(x, y, initialLength = 5) {
@@ -34,6 +37,11 @@ export class Snake {
         }
         
         this.chain = new VerletChain(nodes, this.segmentLength);
+
+        // Delegates
+        this.bulgeManager = new BulgeManager(this);
+        this.deathAnimation = new DeathAnimation(this);
+        this.renderer = new RenderSnake(this);
     }
 
     setDirection(dir) {
@@ -49,7 +57,7 @@ export class Snake {
 
     update(dt, width, height) {
         if (this.isDead) {
-            this.updateDeathAnimation(dt, width, height);
+            this.deathAnimation.updateDeathAnimation(dt, width, height);
             return;
         }
 
@@ -82,39 +90,13 @@ export class Snake {
     die() {
         if (this.isDead) return;
         this.isDead = true;
-        this.chain.stiffness = 0.05; // Loosen chain instead of breaking completely
-        this.chain.nodes[0].locked = false; // Unlock head
-        
-        const explosionStrength = 15;
-        this.chain.nodes.forEach(node => {
-            const randomDir = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).normalize();
-            const velocity = randomDir.mult(explosionStrength * (0.5 + Math.random()));
-            node.oldPos = Vector2D.sub(node.pos, velocity);
-        });
-    }
-
-    updateDeathAnimation(dt, width, height) {
-        this.deathTimer += dt / 1000;
-        // Apply gravity-like force
-        const gravity = new Vector2D(0, 0.05);
-
-        this.chain.nodes.forEach(node => {
-            const velocity = Vector2D.sub(node.pos, node.oldPos);
-            velocity.add(gravity);
-            node.oldPos = node.pos.copy();
-            node.pos.add(velocity);
-
-            node.update(dt); // Basic verlet update
-            node.constrain(width, height);
-        });
-
-        this.chain.update(3); // apply loose constraints
+        this.deathAnimation.die();
     }
 
     grow() {
         if (this.isDead) return;
         this.chain.addNode(0, 0);
-        this.eatEvents.push(this._time * 1000); // Record current time in MS for a new bulge
+        this.bulgeManager.recordEat(this._time * 1000);
     }
 
     getHead() {
@@ -169,159 +151,12 @@ export class Snake {
 
     render(ctx) {
         if (this.isDead) {
-            this.renderDeathAnimation(ctx);
+            this.deathAnimation.renderDeathAnimation(ctx);
             return;
         }
 
-        const nodes = this.chain.nodes;
-        const timeMs = this._time * 1000; // Get current time in milliseconds
-        
-        // Clean up finished bulge events once per frame
-        if (this.eatEvents.length > 0) {
-            const nodesLength = this.chain.nodes.length;
-            this.eatEvents = this.eatEvents.filter(eatTime => {
-                const elapsed = timeMs - eatTime;
-                const pulseCenterIndex = elapsed / this.bulgeDurationPerNode;
-                // Keep event if the pulse is still traveling along the body
-                return pulseCenterIndex <= nodesLength + 2;
-            });
-        }
-
-        // --- Wobble Highlight ---
-        const wobbleSign = Math.sign(this.wobble);
-        if (wobbleSign !== 0) {
-            const highlightAlpha = Math.abs(this.wobble) / this.wobbleAmplitude;
-            if (highlightAlpha > 0.01) {
-                // use a single unified highlight color for both sides
-                const baseColor = `255,159,243`;
-                ctx.save();
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = `rgba(${baseColor}, ${highlightAlpha * 0.7})`;
-                
-                // Draw each segment separately with alpha fading toward the tail
-                for (let i = 0; i < nodes.length - 1; i++) {
-                    const p1 = nodes[i].pos;
-                    const p2 = nodes[i+1].pos;
-                    const dir = Vector2D.sub(p2, p1).normalize();
-                    const perp = new Vector2D(dir.y, -dir.x).mult(wobbleSign * 10);
-                    const offsetP1 = Vector2D.add(p1, perp);
-                    const offsetP2 = Vector2D.add(p2, perp);
-
-                    const segT = i / (nodes.length - 1);
-                    const segAlpha = highlightAlpha * (1 - segT);
-                    if (segAlpha <= 0.01) continue;
-
-                    ctx.strokeStyle = `rgba(${baseColor}, ${segAlpha * 0.7})`;
-                    ctx.lineWidth = 6 - (i / nodes.length) * 4;
-                    ctx.beginPath();
-                    ctx.moveTo(offsetP1.x, offsetP1.y);
-                    ctx.lineTo(offsetP2.x, offsetP2.y);
-                    ctx.stroke();
-                }
-                ctx.restore();
-            }
-        }
-
-        // Draw body segments with gradient
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        
-        for (let i = 0; i < nodes.length - 1; i++) {
-            const p1 = nodes[i].pos;
-            const p2 = nodes[i + 1].pos;
-
-            // Calculate bulge factor for nodes i and i+1
-            const bulgeFactor1 = this.getBulgeFactor(i, timeMs);
-            const bulgeFactor2 = this.getBulgeFactor(i + 1, timeMs);
-            
-            // We use the maximum bulge factor for visual emphasis on the segment thickness
-            const segmentBulgeFactor = Math.max(bulgeFactor1, bulgeFactor2);
-
-            const gradient = ctx.createLinearGradient(
-                nodes[i].pos.x, nodes[i].pos.y,
-                nodes[i + 1].pos.x, nodes[i + 1].pos.y
-            );
-            
-            const hue = (i / nodes.length) * 60 + 180;
-            gradient.addColorStop(0, `hsl(${hue}, 70%, 60%)`);
-            gradient.addColorStop(1, `hsl(${hue + 20}, 70%, 50%)`);
-            
-            ctx.strokeStyle = gradient;
-            
-            // Apply bulge factor to base width
-            const baseWidth = 16 - (i / nodes.length) * 8;
-            ctx.lineWidth = baseWidth * segmentBulgeFactor;
-            
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].pos.x, nodes[i].pos.y);
-            ctx.lineTo(nodes[i + 1].pos.x, nodes[i + 1].pos.y);
-            ctx.stroke();
-        }
-
-        // Draw head with glow
-        const head = this.getHead();
-        const headBulge = this.getBulgeFactor(0, timeMs);
-        const headRadius = 10 * headBulge;
-        
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#4ecdc4';
-        ctx.fillStyle = '#4ecdc4';
-        ctx.beginPath();
-        ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-    }
-
-    renderDeathAnimation(ctx) {
-        const nodes = this.chain.nodes;
-        
-        // Fades out over 1.5 seconds 
-        const fade = Math.max(0, 1 - this.deathTimer / 1.5); 
-        
-        if (fade <= 0) return;
-
-        ctx.globalAlpha = fade;
-        ctx.shadowBlur = 0;
-        ctx.lineCap = 'round';
-        
-        // Draw individual nodes as disconnected particles
-        for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i];
-            const p = node.pos;
-            
-            // Calculate size based on index (tapering from head to tail)
-            const indexRatio = i / (nodes.length - 1);
-            let radius;
-            let hue;
-            
-            if (i === 0) {
-                // Head node
-                radius = 10;
-                hue = 180; // Cyan-ish color for head
-                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
-                
-                ctx.shadowBlur = 10 * fade;
-                ctx.shadowColor = `rgba(78, 205, 200, ${fade * 0.8})`;
-            } else {
-                // Body nodes - calculate radius based on segment width logic (16 down to 8)
-                const baseWidth = 16 - indexRatio * 8;
-                radius = baseWidth * 0.5; // Radius is half the segment width
-                
-                // Color gradient along the body
-                hue = indexRatio * 60 + 180;
-                ctx.fillStyle = `hsl(${hue}, 70%, 55%)`; 
-                ctx.shadowBlur = 0;
-            }
-
-            // Render node as a circle (disconnected particle)
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
+        this.bulgeManager.cleanup(this._time * 1000);
+        this.renderer.render(ctx);
     }
 
     setScore(score) {
