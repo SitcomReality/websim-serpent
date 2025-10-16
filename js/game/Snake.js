@@ -104,38 +104,8 @@ export class Snake {
     }
     
     getBulgeFactor(i, timeMs) {
-        if (this.eatEvents.length === 0) return 1.0;
-
-        const nodesLength = this.chain.nodes.length;
-        let totalBulgeAmount = 0;
-
-        for (const eatTime of this.eatEvents) {
-            const elapsed = timeMs - eatTime;
-            const pulseCenterIndex = elapsed / this.bulgeDurationPerNode;
-
-            // Calculate falloff based on progress along the snake's body
-            const progress = Math.min(1, pulseCenterIndex / (nodesLength - 1));
-            // Cubic ease-out: bulge stays large then drops off quickly near the tail
-            const falloff = 1 - Math.pow(progress, 3);
-            const currentBulgeMagnitude = 1.0 + (this.bulgeMagnitude - 1.0) * falloff;
-
-            const distance = Math.abs(i - pulseCenterIndex);
-            const radiusOfInfluence = 1.5;
-
-            if (distance > radiusOfInfluence) {
-                continue;
-            }
-
-            // Calculate influence: 1 at center, 0 at edge
-            const influence = 1 - distance / radiusOfInfluence;
-            // Squared influence for a sharp peak
-            const influenceSquared = influence * influence;
-
-            const bulgeAmount = influenceSquared * (currentBulgeMagnitude - 1.0);
-            totalBulgeAmount += bulgeAmount;
-        }
-
-        return 1.0 + totalBulgeAmount;
+        // Delegate to BulgeManager which owns eat event state and timing
+        return this.bulgeManager.getBulgeFactor(i, timeMs);
     }
 
     checkSelfCollision() {
