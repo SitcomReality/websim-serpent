@@ -17,6 +17,7 @@ export class Snake {
         this.baseWobbleAmplitude = this.wobbleAmplitude;
         this.currentWobbleAmp = 0;
         this.score = 0;
+        this.stiffnessFactor = 0; // Initialize stiffness factor
         
         // Create initial nodes
         const nodes = [];
@@ -27,6 +28,9 @@ export class Snake {
         
         this.chain = new VerletChain(nodes, this.segmentLength);
         this.updateNodeMasses();
+
+        // Ensure initial score-dependent parameters are set correctly after chain initialization
+        this.setScore(0);
     }
 
     setDirection(dir) {
@@ -147,10 +151,16 @@ export class Snake {
         const s = Math.max(0, score);
         if (s <= 15) {
             this.currentWobbleAmp = this.baseWobbleAmplitude * (s / 15);
+            // Stiffness increases from 0 (rigid) to 1 (current flexibility)
+            this.stiffnessFactor = s / 15;
         } else {
             this.currentWobbleAmp = this.baseWobbleAmplitude * (1 + 0.02 * (s - 15));
+            this.stiffnessFactor = 1;
         }
         this.score = s;
         this.updateNodeMasses();
+        
+        // Apply stiffness to the chain
+        this.chain.stiffnessFactor = this.stiffnessFactor;
     }
 }
