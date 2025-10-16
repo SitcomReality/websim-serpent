@@ -4,7 +4,7 @@ export class VerletChain {
     constructor(nodes, segmentLength) {
         this.nodes = nodes;
         this.segmentLength = segmentLength;
-        this.stiffnessFactor = 1.0; // Default to current flexibility
+        this.stiffness = 1.0; // 1.0 = fully stiff, 0.0 = fully floppy
     }
 
     update(iterations = 3) {
@@ -15,9 +15,6 @@ export class VerletChain {
     }
 
     applyConstraints() {
-        if (this.stiffnessFactor < 0.001) return; // Optimization for near-rigid state
-        const K = this.stiffnessFactor;
-
         for (let i = 0; i < this.nodes.length - 1; i++) {
             const nodeA = this.nodes[i];
             const nodeB = this.nodes[i + 1];
@@ -25,13 +22,12 @@ export class VerletChain {
             const delta = Vector2D.sub(nodeB.pos, nodeA.pos);
             const distance = delta.mag();
             const diff = this.segmentLength - distance;
-            const offset = delta.normalize().mult(diff);
+            const offset = delta.normalize().mult(diff * this.stiffness); // Apply stiffness here
 
             const totalInvMass = nodeA.invMass + nodeB.invMass;
             if (totalInvMass > 0) {
-                // Apply stiffness factor K (0 = rigid, 1 = floppy)
-                const correctionA = offset.copy().mult(nodeA.invMass / totalInvMass).mult(K);
-                const correctionB = offset.copy().mult(nodeB.invMass / totalInvMass).mult(K);
+                const correctionA = offset.copy().mult(nodeA.invMass / totalInvMass);
+                const correctionB = offset.copy().mult(nodeB.invMass / totalInvMass);
 
                 if (!nodeA.locked) nodeA.pos.sub(correctionA);
                 if (!nodeB.locked) nodeB.pos.add(correctionB);

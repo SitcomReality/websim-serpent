@@ -21,3 +21,4 @@ export class GameScreen extends Screen {
         }
     }
 }
+

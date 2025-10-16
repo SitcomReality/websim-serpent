@@ -80,8 +80,7 @@ export class Game {
             this.snake.grow();
             this.smokeSystem.emitSplash(this.food.pos.x, this.food.pos.y);
             this.food = Food.spawn(this.width, this.height);
-            // The snake's setScore method will be called in the next update, 
-            // which will then call updateNodeMasses. So no extra call is needed here.
+            // setScore will be called in the next update, which updates stiffness
         }
 
         // Check self collision
