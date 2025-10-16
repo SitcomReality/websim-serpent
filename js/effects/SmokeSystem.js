@@ -52,7 +52,8 @@ export class SmokeSystem {
             const speed = 3 + Math.random() * 4;
             const vel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed);
             const color = colors[Math.floor(Math.random() * colors.length)];
-            this.sparks.push(new SparkParticle(x, y, vel, color, 1 + Math.random() * 0.5));
+            // much smaller spark sizes (around 0.1 - 0.25)
+            this.sparks.push(new SparkParticle(x, y, vel, color, 0.1 + Math.random() * 0.15));
         }
     }
 
