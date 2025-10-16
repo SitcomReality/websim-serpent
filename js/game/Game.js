@@ -2,6 +2,7 @@ import { Snake } from './Snake.js';
 import { Food } from './Food.js';
 import { SmokeSystem } from '../effects/SmokeSystem.js';
 import { Vector2D } from '../utils/Vector2D.js';
+import { Storage } from '../utils/Storage.js';
 
 export class Game {
     constructor(canvas, onGameOver) {
@@ -111,7 +112,15 @@ export class Game {
 
     gameOver() {
         this.running = false;
-        this.onGameOver(this.score);
+        const prevHigh = Storage.getHighScore();
+        const isNew = this.score > prevHigh;
+        if (isNew) Storage.setHighScore(this.score);
+        this.onGameOver({ 
+            score: this.score, 
+            highScore: Storage.getHighScore(), 
+            prevHighScore: prevHigh, 
+            isNewHigh: isNew 
+        });
     }
 
     getScore() {

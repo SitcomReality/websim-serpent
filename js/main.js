@@ -43,13 +43,13 @@ class App {
     }
 
     startGame() {
-        this.game = new Game(this.canvas, (score) => this.handleGameOver(score));
+        this.game = new Game(this.canvas, (result) => this.handleGameOver(result));
         this.game.init();
         this.showScreen(this.gameScreen);
     }
 
-    handleGameOver(score) {
-        this.gameOverScreen.setScore(score);
+    handleGameOver(result) {
+        this.gameOverScreen.setScore(result.score, result.highScore, result.isNewHigh, result.prevHighScore);
         this.showScreen(this.gameOverScreen);
     }
 
@@ -72,4 +72,3 @@ class App {
 }
 
 new App();
-
