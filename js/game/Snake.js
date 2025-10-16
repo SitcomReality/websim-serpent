@@ -20,11 +20,9 @@ export class Snake {
         this.wobble = 0; // To store current wobble value for rendering
         
         // Bulge effect properties
-        this.eatTime = -1000; // Time of last meal ingestion, in MS relative to _time=0
         this.bulgeDurationPerNode = 100; // ms per node for bulge travel
-        this.bulgeMagnitude = 1.6; // Max scale factor for width/radius
-        this.baseBulgeMagnitude = this.bulgeMagnitude; // store original to revert after boost
-        this._bulgeBoostUntil = -1;
+        this.bulgeMagnitude = 2.0; // Max scale factor for width/radius (starts at 2x)
+        this.eatEvents = []; // Stores timestamps of eat events for multiple bulges
         
         // Create initial nodes
         const nodes = [];
@@ -76,11 +74,7 @@ export class Snake {
 
     grow() {
         this.chain.addNode(0, 0);
-        this.eatTime = this._time * 1000; // Record current time in MS
-        // Double bulge magnitude temporarily for the passing pulse
-        this.bulgeMagnitude = this.baseBulgeMagnitude * 2;
-        const estimatedDuration = (this.chain.nodes.length + 2) * this.bulgeDurationPerNode;
-        this._bulgeBoostUntil = this.eatTime + estimatedDuration;
+        this.eatEvents.push(this._time * 1000); // Record current time in MS for a new bulge
     }
 
     getHead() {
@@ -88,44 +82,38 @@ export class Snake {
     }
     
     getBulgeFactor(i, timeMs) {
-        if (this.eatTime < 0) return 1.0;
-        
-        // If the temporary bulge boost duration passed, revert to base magnitude
-        if (this._bulgeBoostUntil > 0 && timeMs > this._bulgeBoostUntil) {
-            this.bulgeMagnitude = this.baseBulgeMagnitude;
-            this._bulgeBoostUntil = -1;
-        }
-        
-        const elapsed = timeMs - this.eatTime;
-        
-        // Define the target index of the bulge center at this elapsed time
-        // Node 0 peaks at elapsed = 0
-        const pulseCenterIndex = elapsed / this.bulgeDurationPerNode;
-        
+        if (this.eatEvents.length === 0) return 1.0;
+
         const nodesLength = this.chain.nodes.length;
-        
-        // If pulse is far past the tail, stop calculating and return 1.0
-        // We use nodesLength + 2 as a threshold to ensure the effect completes on the last node (nodesLength - 1)
-        if (pulseCenterIndex > nodesLength + 2) {
-             this.eatTime = -1000; // Reset state
-             return 1.0;
+        let totalBulgeAmount = 0;
+
+        for (const eatTime of this.eatEvents) {
+            const elapsed = timeMs - eatTime;
+            const pulseCenterIndex = elapsed / this.bulgeDurationPerNode;
+
+            // Calculate falloff based on progress along the snake's body
+            const progress = Math.min(1, pulseCenterIndex / (nodesLength - 1));
+            // Cubic ease-out: bulge stays large then drops off quickly near the tail
+            const falloff = 1 - Math.pow(progress, 3);
+            const currentBulgeMagnitude = 1.0 + (this.bulgeMagnitude - 1.0) * falloff;
+
+            const distance = Math.abs(i - pulseCenterIndex);
+            const radiusOfInfluence = 1.5;
+
+            if (distance > radiusOfInfluence) {
+                continue;
+            }
+
+            // Calculate influence: 1 at center, 0 at edge
+            const influence = 1 - distance / radiusOfInfluence;
+            // Squared influence for a sharp peak
+            const influenceSquared = influence * influence;
+
+            const bulgeAmount = influenceSquared * (currentBulgeMagnitude - 1.0);
+            totalBulgeAmount += bulgeAmount;
         }
 
-        const distance = Math.abs(i - pulseCenterIndex);
-        const radiusOfInfluence = 1.5;
-        
-        if (distance > radiusOfInfluence) {
-            return 1.0;
-        }
-        
-        // Calculate influence: 1 at center, 0 at edge
-        const influence = 1 - distance / radiusOfInfluence;
-        
-        // Squared influence for a sharp peak
-        const influenceSquared = influence * influence;
-        
-        const bulgeAmount = influenceSquared * (this.bulgeMagnitude - 1.0);
-        return 1.0 + bulgeAmount;
+        return 1.0 + totalBulgeAmount;
     }
 
     checkSelfCollision() {
@@ -143,6 +131,17 @@ export class Snake {
         const nodes = this.chain.nodes;
         const timeMs = this._time * 1000; // Get current time in milliseconds
         
+        // Clean up finished bulge events once per frame
+        if (this.eatEvents.length > 0) {
+            const nodesLength = this.chain.nodes.length;
+            this.eatEvents = this.eatEvents.filter(eatTime => {
+                const elapsed = timeMs - eatTime;
+                const pulseCenterIndex = elapsed / this.bulgeDurationPerNode;
+                // Keep event if the pulse is still traveling along the body
+                return pulseCenterIndex <= nodesLength + 2;
+            });
+        }
+
         // --- Wobble Highlight ---
         const wobbleSign = Math.sign(this.wobble);
         if (wobbleSign !== 0) {
