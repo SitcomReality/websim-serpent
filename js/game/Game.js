@@ -43,6 +43,15 @@ export class Game {
         
         window.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
+            // Debug: simulate eating with '+' (main keyboard or numpad)
+            const plusPressed = e.key === '+' || e.code === 'NumpadAdd' || (e.key === '=' && e.shiftKey) || e.key === 'Add';
+            if (!this.gameOverState && plusPressed) {
+                this.score++;
+                this.snake.grow();
+                const head = this.snake.getHead();
+                this.smokeSystem.emitSplash(head.pos.x, head.pos.y);
+                this.smokeSystem.emitSparks(head.pos.x, head.pos.y, 20);
+            }
             // remove absolute direction controls
         });
 
