@@ -43,6 +43,15 @@ export class SmokeSystem {
         this.emitSparks(x, y, 12);
     }
 
+    emitPoof(x, y, count = 14) {
+        const colors = ['rgba(200,200,200,0.7)'];
+        for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * 2;
+            const vel = new Vector2D(Math.cos(a) * s, Math.sin(a) * s);
+            this.particles.push(new SmokeParticle(x, y, vel, colors[0], 0.8 + Math.random() * 0.5));
+        }
+    }
+
     emitSparks(x, y, count = 12) {
         const colors = [
             '#ff6b6b', '#ffd166', '#6bf2ff', '#9b8cff', '#4ecdc4', '#ff99c8'

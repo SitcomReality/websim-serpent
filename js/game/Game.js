@@ -25,11 +25,13 @@ export class Game {
     init() {
         this.score = 0;
         this.snake = new Snake(this.width / 2, this.height / 2);
-        this.food = Food.spawn(this.width, this.height);
         this.smokeSystem = new SmokeSystem();
         this.running = true;
         this.lastTime = performance.now();
         this.smokeTimer = 0;
+        this.elapsedMs = 0;
+        this.foods = [];
+        this.ensureFoodCount(1);
         
         this.setupInput();
     }
@@ -50,6 +52,9 @@ export class Game {
     update(dt) {
         if (!this.running) return;
 
+        this.elapsedMs += dt;
+        const target = this.elapsedMs >= 10000 ? 3 : (this.elapsedMs >= 5000 ? 2 : 1);
+
         // set turning based on keys
         const left = this.keys['arrowleft'] || this.keys['a'];
         const right = this.keys['arrowright'] || this.keys['d'];
@@ -57,7 +62,7 @@ export class Game {
         this.snake.setScore(this.score);
 
         this.snake.update(dt, this.width, this.height);
-        this.food.update(dt);
+        this.foods.forEach(f => f.update(dt));
         this.smokeSystem.update(dt);
 
         // Emit trail smoke periodically
@@ -73,18 +78,23 @@ export class Game {
             }
         }
 
-        // Check food collision
         const head = this.snake.getHead();
-        if (head.pos.dist(this.food.pos) < head.radius + this.food.radius) {
-            this.score++;
-            this.snake.grow();
-            this.smokeSystem.emitSplash(this.food.pos.x, this.food.pos.y);
-            // new: bonus spark burst with slightly higher count
-            this.smokeSystem.emitSparks(this.food.pos.x, this.food.pos.y, 20);
-            this.food = Food.spawn(this.width, this.height);
-        }
+        this.foods = this.foods.filter(f => {
+            if (f.isExpired()) { 
+                this.smokeSystem.emitPoof(f.pos.x, f.pos.y); 
+                return false;
+            }
+            if (head.pos.dist(f.pos) < head.radius + f.radius) {
+                this.score++;
+                this.snake.grow();
+                this.smokeSystem.emitSplash(f.pos.x, f.pos.y);
+                this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 20);
+                return false;
+            }
+            return true;
+        });
+        this.ensureFoodCount(target);
 
-        // Check self collision
         if (this.snake.checkSelfCollision()) {
             this.gameOver();
         }
@@ -95,7 +105,7 @@ export class Game {
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         this.smokeSystem.render(this.ctx);
-        this.food.render(this.ctx);
+        this.foods.forEach(f => f.render(this.ctx));
         this.snake.render(this.ctx);
     }
 
@@ -110,5 +120,9 @@ export class Game {
 
     destroy() {
         this.running = false;
+    }
+
+    ensureFoodCount(target) {
+        while (this.foods.length < target) this.foods.push(Food.spawn(this.width, this.height));
     }
 }

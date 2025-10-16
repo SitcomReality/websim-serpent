@@ -5,22 +5,23 @@ export class Food {
         this.pos = new Vector2D(x, y);
         this.radius = 16;
         this.pulsePhase = Math.random() * Math.PI * 2;
+        this.ageMs = 0; this.lifeMs = 15000;
     }
 
     update(dt) {
         this.pulsePhase += dt * 0.003;
+        this.ageMs += dt;
     }
 
     render(ctx) {
-        const pulse = Math.sin(this.pulsePhase) * 0.3 + 1;
-        const radius = this.radius * pulse;
-        
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ff6b6b';
-        ctx.fillStyle = '#ff6b6b';
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, radius, 0, Math.PI * 2);
-        ctx.fill();
+        const t = Math.min(1, this.ageMs / this.lifeMs);
+        const pulse = Math.sin(this.pulsePhase) * 0.15 + 1;
+        const shrink = t > 0.9 ? 1 - (t - 0.9) / 0.1 : 1;
+        const radius = this.radius * pulse * Math.max(0, shrink);
+        const s = 90 * (1 - t), l = 60 - 10 * t;
+        ctx.shadowBlur = 15; ctx.shadowColor = `hsl(0, ${s}%, ${l}%)`;
+        ctx.fillStyle = `hsl(0, ${s}%, ${l}%)`;
+        ctx.beginPath(); ctx.arc(this.pos.x, this.pos.y, radius, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
     }
 
@@ -29,4 +30,6 @@ export class Food {
         const y = margin + Math.random() * (height - margin * 2);
         return new Food(x, y);
     }
+    
+    isExpired() { return this.ageMs >= this.lifeMs; }
 }
