@@ -94,7 +94,8 @@ export class Snake {
         if (wobbleSign !== 0) {
             const highlightAlpha = Math.abs(this.wobble) / this.wobbleAmplitude;
             if (highlightAlpha > 0.01) {
-                const highlightColor = this.wobble > 0 ? `rgba(255, 107, 107, ${highlightAlpha * 0.7})` : `rgba(78, 205, 196, ${highlightAlpha * 0.7})`;
+                // use a single unified highlight color for both sides
+                const highlightColor = `rgba(255,159,243, ${highlightAlpha * 0.7})`;
                 ctx.save();
                 ctx.globalCompositeOperation = 'lighter';
                 ctx.strokeStyle = highlightColor;
