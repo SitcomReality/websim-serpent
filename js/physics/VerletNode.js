@@ -19,6 +19,13 @@ export class VerletNode {
         this.pos.add(velocity.mult(this.damping));
     }
 
+    applyForce(force) {
+        if (this.locked) return;
+        // In Verlet, external forces (acceleration) are applied directly to the position vector
+        // Assumes force vector is appropriately scaled (e.g., multiplied by dt*dt or constant for visual effect)
+        this.pos.add(force);
+    }
+
     constrain(width, height) {
         if (this.pos.x < this.radius) this.pos.x = this.radius;
         if (this.pos.x > width - this.radius) this.pos.x = width - this.radius;

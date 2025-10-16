@@ -24,14 +24,16 @@ export class DeathAnimation {
         this.deathTimer += dt / 1000;
         const gravity = new Vector2D(0, 0.05);
         this.snake.chain.nodes.forEach(node => {
-            const velocity = Vector2D.sub(node.pos, node.oldPos);
-            velocity.add(gravity);
-            node.oldPos = node.pos.copy();
-            node.pos.add(velocity);
+            // Apply gravity/forces
+            node.applyForce(gravity);
+            
+            // Perform Verlet integration (velocity update + damping)
             node.update(dt);
+            
+            // Constrain
             node.constrain(width, height);
         });
-        this.snake.chain.update(3);
+        // Constraints are now broken by omitting this.snake.chain.update(3);
     }
 
     renderDeathAnimation(ctx) {
