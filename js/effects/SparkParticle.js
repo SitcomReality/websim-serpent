@@ -1,23 +1,23 @@
 import { Vector2D } from '../utils/Vector2D.js';
 
 export class SparkParticle {
-    constructor(x, y, velocity, color = '#fff', size = 0.5) {
+    constructor(x, y, velocity, color = '#fff', size = 0.25) {
         this.pos = new Vector2D(x, y);
-        this.velocity = velocity;
+        this.velocity = velocity.copy().mult(1.25);
         this.color = color;
         this.size = size;
-        this.life = 0.5 + Math.random() * 0.6; // short life
+        this.life = (0.5 + Math.random() * 0.6) * 0.75; // shorter life (~25% less)
         this.maxLife = this.life;
-        this.gravity = 0.12 + Math.random() * 0.08;
+        this.gravity = 0; // no gravity
         this.friction = 0.96;
     }
 
     update(dt) {
         // fast movement with simple physics
-        this.velocity.y += this.gravity;
+        // gravity removed
         this.pos.add(this.velocity);
         this.velocity.mult(this.friction);
-        this.life -= dt * 0.0015; // dt is ms, reduce life accordingly
+        this.life -= dt * 0.002; // increased decay to shorten lifetime (~1.333x)
         return this.life > 0;
     }
 
