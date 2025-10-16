@@ -54,6 +54,7 @@ export class Game {
         const left = this.keys['arrowleft'] || this.keys['a'];
         const right = this.keys['arrowright'] || this.keys['d'];
         this.snake.setTurning(!!left, !!right);
+        this.snake.setScore(this.score);
 
         this.snake.update(dt, this.width, this.height);
         this.food.update(dt);

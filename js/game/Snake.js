@@ -14,6 +14,9 @@ export class Snake {
         this.wobbleAmplitude = 0.6;
         this.wobbleFrequency = 0.6;
         this._time = 0;
+        this.baseWobbleAmplitude = this.wobbleAmplitude;
+        this.currentWobbleAmp = 0;
+        this.score = 0;
         
         // Create initial nodes
         const nodes = [];
@@ -41,7 +44,7 @@ export class Snake {
         this._time += dtSec;
         if (this.turnLeft) this.headingAngle -= this.turnSpeed * dtSec;
         if (this.turnRight) this.headingAngle += this.turnSpeed * dtSec;
-        const wobble = this.wobbleAmplitude * Math.sin(this._time * Math.PI * 2 * this.wobbleFrequency);
+        const wobble = this.currentWobbleAmp * Math.sin(this._time * Math.PI * 2 * this.wobbleFrequency);
         const angle = this.headingAngle + wobble;
         this.direction.x = Math.cos(angle);
         this.direction.y = Math.sin(angle);
@@ -115,5 +118,14 @@ export class Snake {
         ctx.arc(head.pos.x, head.pos.y, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+    }
+
+    setScore(score) {
+        const s = Math.max(0, score);
+        if (s <= 15) {
+            this.currentWobbleAmp = this.baseWobbleAmplitude * (s / 15);
+        } else {
+            this.currentWobbleAmp = this.baseWobbleAmplitude * (1 + 0.02 * (s - 15));
+        }
     }
 }
