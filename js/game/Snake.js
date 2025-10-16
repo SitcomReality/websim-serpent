@@ -95,33 +95,32 @@ export class Snake {
             const highlightAlpha = Math.abs(this.wobble) / this.wobbleAmplitude;
             if (highlightAlpha > 0.01) {
                 // use a single unified highlight color for both sides
-                const highlightColor = `rgba(255,159,243, ${highlightAlpha * 0.7})`;
+                const baseColor = `255,159,243`;
                 ctx.save();
                 ctx.globalCompositeOperation = 'lighter';
-                ctx.strokeStyle = highlightColor;
                 ctx.shadowBlur = 10;
-                ctx.shadowColor = highlightColor;
+                ctx.shadowColor = `rgba(${baseColor}, ${highlightAlpha * 0.7})`;
                 
-                ctx.beginPath();
+                // Draw each segment separately with alpha fading toward the tail
                 for (let i = 0; i < nodes.length - 1; i++) {
                     const p1 = nodes[i].pos;
                     const p2 = nodes[i+1].pos;
-                    
                     const dir = Vector2D.sub(p2, p1).normalize();
-                    const perp = new Vector2D(dir.y, -dir.x).mult(wobbleSign * 10); // offset to right/left
-                    
+                    const perp = new Vector2D(dir.y, -dir.x).mult(wobbleSign * 10);
                     const offsetP1 = Vector2D.add(p1, perp);
                     const offsetP2 = Vector2D.add(p2, perp);
 
-                    const lineWidth = 6 - (i / nodes.length) * 4;
-                    ctx.lineWidth = lineWidth;
+                    const segT = i / (nodes.length - 1);
+                    const segAlpha = highlightAlpha * (1 - segT);
+                    if (segAlpha <= 0.01) continue;
 
-                    if (i === 0) {
-                        ctx.moveTo(offsetP1.x, offsetP1.y);
-                    }
+                    ctx.strokeStyle = `rgba(${baseColor}, ${segAlpha * 0.7})`;
+                    ctx.lineWidth = 6 - (i / nodes.length) * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(offsetP1.x, offsetP1.y);
                     ctx.lineTo(offsetP2.x, offsetP2.y);
+                    ctx.stroke();
                 }
-                ctx.stroke();
                 ctx.restore();
             }
         }
