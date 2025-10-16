@@ -1,7 +1,7 @@
 import { Vector2D } from '../utils/Vector2D.js';
 
 export class SparkParticle {
-    constructor(x, y, velocity, color = '#fff', size = 1) {
+    constructor(x, y, velocity, color = '#fff', size = 0.5) {
         this.pos = new Vector2D(x, y);
         this.velocity = velocity;
         this.color = color;
