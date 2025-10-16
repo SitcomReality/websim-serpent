@@ -17,7 +17,6 @@ export class Snake {
         this.baseWobbleAmplitude = this.wobbleAmplitude;
         this.currentWobbleAmp = 0;
         this.score = 0;
-        this.stiffness = 0.95; // start very stiff
         
         // Create initial nodes
         const nodes = [];
@@ -27,7 +26,6 @@ export class Snake {
         }
         
         this.chain = new VerletChain(nodes, this.segmentLength);
-        this.updateNodeMasses();
     }
 
     setDirection(dir) {
@@ -39,27 +37,6 @@ export class Snake {
     setTurning(left, right) {
         this.turnLeft = left;
         this.turnRight = right;
-    }
-
-    updateNodeMasses() {
-        const score = this.score;
-        const totalNodes = this.chain.nodes.length;
-
-        // Bias factor: 1 at score 0, approaches 0 as score approaches 15
-        const biasFactor = Math.max(0, 1 - score / 15);
-        
-        // At score 0, tail is 1/10th weight of head. At score 15+, all are weight 1.
-        const minMass = 1 - 0.9 * biasFactor;
-
-        this.chain.nodes.forEach((node, i) => {
-            if (i === 0) { // Head node
-                node.setMass(1);
-            } else {
-                const t = (i - 1) / (totalNodes - 2 || 1); // 0 for first tail, 1 for last
-                const mass = 1 - (1 - minMass) * t;
-                node.setMass(mass);
-            }
-        });
     }
 
     update(dt, width, height) {
@@ -89,7 +66,6 @@ export class Snake {
 
     grow() {
         this.chain.addNode(0, 0);
-        this.updateNodeMasses();
     }
 
     getHead() {
@@ -148,13 +124,15 @@ export class Snake {
         const s = Math.max(0, score);
         if (s <= 15) {
             this.currentWobbleAmp = this.baseWobbleAmplitude * (s / 15);
-            this.stiffness = 0.95 - 0.65 * (s / 15); // from 0.95 down to 0.3
         } else {
             this.currentWobbleAmp = this.baseWobbleAmplitude * (1 + 0.02 * (s - 15));
-            this.stiffness = 0.3; // minimum stiffness
         }
-        this.score = s;
-        this.updateNodeMasses();
-        this.chain.stiffness = this.stiffness;
+        const t = Math.min(1, s / 15);
+        const damping = 0.92 + 0.06 * t;          // 0.92 -> 0.98 by score 15
+        const stiffness = 1.3 - 0.3 * t;          // 1.3 -> 1.0 by score 15
+        this.chain.stiffness = stiffness;
+        for (let i = 1; i < this.chain.nodes.length; i++) {
+            this.chain.nodes[i].damping = damping;
+        }
     }
 }

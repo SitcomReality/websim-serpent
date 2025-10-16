@@ -6,13 +6,7 @@ export class VerletNode {
         this.oldPos = new Vector2D(x, y);
         this.locked = locked;
         this.radius = 8;
-        this.mass = 1;
-        this.invMass = locked ? 0 : 1;
-    }
-
-    setMass(mass) {
-        this.mass = mass;
-        this.invMass = this.locked ? 0 : 1 / this.mass;
+        this.damping = 0.98; // new: adjustable per-node damping
     }
 
     update(dt) {
@@ -22,7 +16,7 @@ export class VerletNode {
         this.oldPos = this.pos.copy();
         
         // Apply velocity and damping
-        this.pos.add(velocity.mult(0.98));
+        this.pos.add(velocity.mult(this.damping));
     }
 
     constrain(width, height) {
