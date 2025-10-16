@@ -11,6 +11,9 @@ export class Snake {
         this.turnSpeed = Math.PI; // radians per second
         this.turnLeft = false;
         this.turnRight = false;
+        this.wobbleAmplitude = 0.6;
+        this.wobbleFrequency = 0.6;
+        this._time = 0;
         
         // Create initial nodes
         const nodes = [];
@@ -35,10 +38,13 @@ export class Snake {
 
     update(dt, width, height) {
         const dtSec = dt / 1000;
+        this._time += dtSec;
         if (this.turnLeft) this.headingAngle -= this.turnSpeed * dtSec;
         if (this.turnRight) this.headingAngle += this.turnSpeed * dtSec;
-        this.direction.x = Math.cos(this.headingAngle);
-        this.direction.y = Math.sin(this.headingAngle);
+        const wobble = this.wobbleAmplitude * Math.sin(this._time * Math.PI * 2 * this.wobbleFrequency);
+        const angle = this.headingAngle + wobble;
+        this.direction.x = Math.cos(angle);
+        this.direction.y = Math.sin(angle);
         
         // Move head
         const head = this.chain.nodes[0];
