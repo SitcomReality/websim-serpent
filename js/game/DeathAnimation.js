@@ -10,9 +10,9 @@ export class DeathAnimation {
     die() {
         if (this.started) return;
         this.started = true;
-        this.snake.chain.stiffness = 0.05;
+        this.snake.chain.stiffness = 0.002;
         this.snake.chain.nodes[0].locked = false;
-        const explosionStrength = 15;
+        const explosionStrength = 2;
         this.snake.chain.nodes.forEach(node => {
             const randomDir = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).normalize();
             const velocity = randomDir.mult(explosionStrength * (0.5 + Math.random()));
@@ -22,7 +22,7 @@ export class DeathAnimation {
 
     updateDeathAnimation(dt, width, height) {
         this.deathTimer += dt / 1000;
-        const gravity = new Vector2D(0, 0.05);
+        const gravity = new Vector2D(0, 0.1);
         this.snake.chain.nodes.forEach(node => {
             // Apply gravity/forces
             node.applyForce(gravity);
