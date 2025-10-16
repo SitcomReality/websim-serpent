@@ -17,6 +17,7 @@ export class Snake {
         this.baseWobbleAmplitude = this.wobbleAmplitude;
         this.currentWobbleAmp = 0;
         this.score = 0;
+        this.wobble = 0; // To store current wobble value for rendering
         
         // Create initial nodes
         const nodes = [];
@@ -44,8 +45,10 @@ export class Snake {
         this._time += dtSec;
         if (this.turnLeft) this.headingAngle -= this.turnSpeed * dtSec;
         if (this.turnRight) this.headingAngle += this.turnSpeed * dtSec;
-        const wobble = this.currentWobbleAmp * Math.sin(this._time * Math.PI * 2 * this.wobbleFrequency);
-        const angle = this.headingAngle + wobble;
+        
+        this.wobble = this.currentWobbleAmp * Math.sin(this._time * Math.PI * 2 * this.wobbleFrequency);
+        const angle = this.headingAngle + this.wobble;
+
         this.direction.x = Math.cos(angle);
         this.direction.y = Math.sin(angle);
         
@@ -86,6 +89,42 @@ export class Snake {
     render(ctx) {
         const nodes = this.chain.nodes;
         
+        // --- Wobble Highlight ---
+        const wobbleSign = Math.sign(this.wobble);
+        if (wobbleSign !== 0) {
+            const highlightAlpha = Math.abs(this.wobble) / this.wobbleAmplitude;
+            if (highlightAlpha > 0.01) {
+                const highlightColor = this.wobble > 0 ? `rgba(255, 107, 107, ${highlightAlpha * 0.7})` : `rgba(78, 205, 196, ${highlightAlpha * 0.7})`;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.strokeStyle = highlightColor;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = highlightColor;
+                
+                ctx.beginPath();
+                for (let i = 0; i < nodes.length - 1; i++) {
+                    const p1 = nodes[i].pos;
+                    const p2 = nodes[i+1].pos;
+                    
+                    const dir = Vector2D.sub(p2, p1).normalize();
+                    const perp = new Vector2D(dir.y, -dir.x).mult(wobbleSign * 10); // offset to right/left
+                    
+                    const offsetP1 = Vector2D.add(p1, perp);
+                    const offsetP2 = Vector2D.add(p2, perp);
+
+                    const lineWidth = 6 - (i / nodes.length) * 4;
+                    ctx.lineWidth = lineWidth;
+
+                    if (i === 0) {
+                        ctx.moveTo(offsetP1.x, offsetP1.y);
+                    }
+                    ctx.lineTo(offsetP2.x, offsetP2.y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
         // Draw body segments with gradient
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
