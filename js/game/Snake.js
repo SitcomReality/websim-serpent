@@ -23,6 +23,8 @@ export class Snake {
         this.eatTime = -1000; // Time of last meal ingestion, in MS relative to _time=0
         this.bulgeDurationPerNode = 100; // ms per node for bulge travel
         this.bulgeMagnitude = 1.6; // Max scale factor for width/radius
+        this.baseBulgeMagnitude = this.bulgeMagnitude; // store original to revert after boost
+        this._bulgeBoostUntil = -1;
         
         // Create initial nodes
         const nodes = [];
@@ -75,6 +77,10 @@ export class Snake {
     grow() {
         this.chain.addNode(0, 0);
         this.eatTime = this._time * 1000; // Record current time in MS
+        // Double bulge magnitude temporarily for the passing pulse
+        this.bulgeMagnitude = this.baseBulgeMagnitude * 2;
+        const estimatedDuration = (this.chain.nodes.length + 2) * this.bulgeDurationPerNode;
+        this._bulgeBoostUntil = this.eatTime + estimatedDuration;
     }
 
     getHead() {
@@ -83,6 +89,12 @@ export class Snake {
     
     getBulgeFactor(i, timeMs) {
         if (this.eatTime < 0) return 1.0;
+        
+        // If the temporary bulge boost duration passed, revert to base magnitude
+        if (this._bulgeBoostUntil > 0 && timeMs > this._bulgeBoostUntil) {
+            this.bulgeMagnitude = this.baseBulgeMagnitude;
+            this._bulgeBoostUntil = -1;
+        }
         
         const elapsed = timeMs - this.eatTime;
         
