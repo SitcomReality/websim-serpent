@@ -21,10 +21,16 @@ export class VerletChain {
             const delta = Vector2D.sub(nodeB.pos, nodeA.pos);
             const distance = delta.mag();
             const diff = this.segmentLength - distance;
-            const offset = delta.normalize().mult(diff * 0.5);
+            const offset = delta.normalize().mult(diff);
 
-            if (!nodeA.locked) nodeA.pos.sub(offset);
-            if (!nodeB.locked) nodeB.pos.add(offset);
+            const totalInvMass = nodeA.invMass + nodeB.invMass;
+            if (totalInvMass > 0) {
+                const correctionA = offset.copy().mult(nodeA.invMass / totalInvMass);
+                const correctionB = offset.copy().mult(nodeB.invMass / totalInvMass);
+
+                if (!nodeA.locked) nodeA.pos.sub(correctionA);
+                if (!nodeB.locked) nodeB.pos.add(correctionB);
+            }
         }
     }
 
@@ -46,4 +52,3 @@ export class VerletChain {
         return Vector2D.sub(node.pos, node.oldPos);
     }
 }
-

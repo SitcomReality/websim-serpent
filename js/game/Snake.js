@@ -26,6 +26,7 @@ export class Snake {
         }
         
         this.chain = new VerletChain(nodes, this.segmentLength);
+        this.updateNodeMasses();
     }
 
     setDirection(dir) {
@@ -37,6 +38,27 @@ export class Snake {
     setTurning(left, right) {
         this.turnLeft = left;
         this.turnRight = right;
+    }
+
+    updateNodeMasses() {
+        const score = this.score;
+        const totalNodes = this.chain.nodes.length;
+
+        // Bias factor: 1 at score 0, approaches 0 as score approaches 15
+        const biasFactor = Math.max(0, 1 - score / 15);
+        
+        // At score 0, tail is 1/10th weight of head. At score 15+, all are weight 1.
+        const minMass = 1 - 0.9 * biasFactor;
+
+        this.chain.nodes.forEach((node, i) => {
+            if (i === 0) { // Head node
+                node.setMass(1);
+            } else {
+                const t = (i - 1) / (totalNodes - 2 || 1); // 0 for first tail, 1 for last
+                const mass = 1 - (1 - minMass) * t;
+                node.setMass(mass);
+            }
+        });
     }
 
     update(dt, width, height) {
@@ -66,6 +88,7 @@ export class Snake {
 
     grow() {
         this.chain.addNode(0, 0);
+        this.updateNodeMasses();
     }
 
     getHead() {
@@ -127,5 +150,7 @@ export class Snake {
         } else {
             this.currentWobbleAmp = this.baseWobbleAmplitude * (1 + 0.02 * (s - 15));
         }
+        this.score = s;
+        this.updateNodeMasses();
     }
 }

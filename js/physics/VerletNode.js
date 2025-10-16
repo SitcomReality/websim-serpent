@@ -6,6 +6,13 @@ export class VerletNode {
         this.oldPos = new Vector2D(x, y);
         this.locked = locked;
         this.radius = 8;
+        this.mass = 1;
+        this.invMass = locked ? 0 : 1;
+    }
+
+    setMass(mass) {
+        this.mass = mass;
+        this.invMass = this.locked ? 0 : 1 / this.mass;
     }
 
     update(dt) {
@@ -25,4 +32,3 @@ export class VerletNode {
         if (this.pos.y > height - this.radius) this.pos.y = height - this.radius;
     }
 }
-
