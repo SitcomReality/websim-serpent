@@ -79,6 +79,8 @@ export class Game {
             this.score++;
             this.snake.grow();
             this.smokeSystem.emitSplash(this.food.pos.x, this.food.pos.y);
+            // new: bonus spark burst with slightly higher count
+            this.smokeSystem.emitSparks(this.food.pos.x, this.food.pos.y, 20);
             this.food = Food.spawn(this.width, this.height);
         }
 
