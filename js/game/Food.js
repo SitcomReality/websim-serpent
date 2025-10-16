@@ -3,7 +3,7 @@ import { Vector2D } from '../utils/Vector2D.js';
 export class Food {
     constructor(x, y) {
         this.pos = new Vector2D(x, y);
-        this.radius = 8;
+        this.radius = 16;
         this.pulsePhase = Math.random() * Math.PI * 2;
     }
 
@@ -30,4 +30,3 @@ export class Food {
         return new Food(x, y);
     }
 }
-
