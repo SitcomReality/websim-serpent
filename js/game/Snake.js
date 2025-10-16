@@ -275,36 +275,53 @@ export class Snake {
 
     renderDeathAnimation(ctx) {
         const nodes = this.chain.nodes;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
         
-        const fade = Math.max(0, 1 - this.deathTimer / 2.0); // Fades out over 2 seconds
+        // Fades out over 1.5 seconds 
+        const fade = Math.max(0, 1 - this.deathTimer / 1.5); 
+        
+        if (fade <= 0) return;
 
-        for (let i = 0; i < nodes.length - 1; i++) {
-            const p1 = nodes[i].pos;
-            const p2 = nodes[i + 1].pos;
+        ctx.globalAlpha = fade;
+        ctx.shadowBlur = 0;
+        ctx.lineCap = 'round';
+        
+        // Draw individual nodes as disconnected particles
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            const p = node.pos;
+            
+            // Calculate size based on index (tapering from head to tail)
+            const indexRatio = i / (nodes.length - 1);
+            let radius;
+            let hue;
+            
+            if (i === 0) {
+                // Head node
+                radius = 10;
+                hue = 180; // Cyan-ish color for head
+                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                
+                ctx.shadowBlur = 10 * fade;
+                ctx.shadowColor = `rgba(78, 205, 200, ${fade * 0.8})`;
+            } else {
+                // Body nodes - calculate radius based on segment width logic (16 down to 8)
+                const baseWidth = 16 - indexRatio * 8;
+                radius = baseWidth * 0.5; // Radius is half the segment width
+                
+                // Color gradient along the body
+                hue = indexRatio * 60 + 180;
+                ctx.fillStyle = `hsl(${hue}, 70%, 55%)`; 
+                ctx.shadowBlur = 0;
+            }
 
-            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-            const hue = (i / nodes.length) * 60 + 180;
-            gradient.addColorStop(0, `hsla(${hue}, 70%, 60%, ${fade})`);
-            gradient.addColorStop(1, `hsla(${hue + 20}, 70%, 50%, ${fade})`);
-            
-            ctx.strokeStyle = gradient;
-            const baseWidth = 16 - (i / nodes.length) * 8;
-            ctx.lineWidth = baseWidth;
-            
+            // Render node as a circle (disconnected particle)
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
+            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+            ctx.fill();
         }
-
-        const head = this.getHead();
-        const headRadius = 10;
-        ctx.fillStyle = `rgba(78, 205, 200, ${fade})`;
-        ctx.beginPath();
-        ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
-        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
     }
 
     setScore(score) {
