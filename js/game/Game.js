@@ -33,6 +33,7 @@ export class Game {
         this.elapsedMs = 0;
         this.foods = [];
         this.ensureFoodCount(1);
+        this.gameOverState = false; // Add game over state
         
         this.setupInput();
     }
@@ -53,6 +54,13 @@ export class Game {
     update(dt) {
         if (!this.running) return;
 
+        // Always update snake and smoke for death animation
+        this.snake.update(dt, this.width, this.height);
+        this.smokeSystem.update(dt);
+
+        // If in game over transition, skip game logic
+        if (this.gameOverState) return;
+
         this.elapsedMs += dt;
         const target = this.elapsedMs >= 10000 ? 3 : (this.elapsedMs >= 5000 ? 2 : 1);
 
@@ -62,10 +70,8 @@ export class Game {
         this.snake.setTurning(!!left, !!right);
         this.snake.setScore(this.score);
 
-        this.snake.update(dt, this.width, this.height);
         this.foods.forEach(f => f.update(dt));
-        this.smokeSystem.update(dt);
-
+        
         // Emit trail smoke periodically
         this.smokeTimer += dt;
         if (this.smokeTimer > 50) {
@@ -111,6 +117,15 @@ export class Game {
     }
 
     gameOver() {
+        if (this.gameOverState) return; // Prevent multiple triggers
+        this.gameOverState = true;
+        this.snake.die();
+
+        // Delay showing the game over screen to allow for animation
+        setTimeout(() => this.showGameOverScreen(), 2000);
+    }
+
+    showGameOverScreen() {
         this.running = false;
         const prevHigh = Storage.getHighScore();
         const isNew = this.score > prevHigh;

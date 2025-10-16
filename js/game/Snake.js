@@ -18,6 +18,8 @@ export class Snake {
         this.currentWobbleAmp = 0;
         this.score = 0;
         this.wobble = 0; // To store current wobble value for rendering
+        this.isDead = false;
+        this.deathTimer = 0;
         
         // Bulge effect properties
         this.bulgeDurationPerNode = 100; // ms per node for bulge travel
@@ -46,6 +48,11 @@ export class Snake {
     }
 
     update(dt, width, height) {
+        if (this.isDead) {
+            this.updateDeathAnimation(dt, width, height);
+            return;
+        }
+
         const dtSec = dt / 1000;
         this._time += dtSec;
         if (this.turnLeft) this.headingAngle -= this.turnSpeed * dtSec;
@@ -72,7 +79,40 @@ export class Snake {
         this.chain.update(5);
     }
 
+    die() {
+        if (this.isDead) return;
+        this.isDead = true;
+        this.chain.stiffness = 0.05; // Loosen chain instead of breaking completely
+        this.chain.nodes[0].locked = false; // Unlock head
+        
+        const explosionStrength = 15;
+        this.chain.nodes.forEach(node => {
+            const randomDir = new Vector2D(Math.random() - 0.5, Math.random() - 0.5).normalize();
+            const velocity = randomDir.mult(explosionStrength * (0.5 + Math.random()));
+            node.oldPos = Vector2D.sub(node.pos, velocity);
+        });
+    }
+
+    updateDeathAnimation(dt, width, height) {
+        this.deathTimer += dt / 1000;
+        // Apply gravity-like force
+        const gravity = new Vector2D(0, 0.05);
+
+        this.chain.nodes.forEach(node => {
+            const velocity = Vector2D.sub(node.pos, node.oldPos);
+            velocity.add(gravity);
+            node.oldPos = node.pos.copy();
+            node.pos.add(velocity);
+
+            node.update(dt); // Basic verlet update
+            node.constrain(width, height);
+        });
+
+        this.chain.update(3); // apply loose constraints
+    }
+
     grow() {
+        if (this.isDead) return;
         this.chain.addNode(0, 0);
         this.eatEvents.push(this._time * 1000); // Record current time in MS for a new bulge
     }
@@ -128,6 +168,11 @@ export class Snake {
     }
 
     render(ctx) {
+        if (this.isDead) {
+            this.renderDeathAnimation(ctx);
+            return;
+        }
+
         const nodes = this.chain.nodes;
         const timeMs = this._time * 1000; // Get current time in milliseconds
         
@@ -226,6 +271,40 @@ export class Snake {
         ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+    }
+
+    renderDeathAnimation(ctx) {
+        const nodes = this.chain.nodes;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        const fade = Math.max(0, 1 - this.deathTimer / 2.0); // Fades out over 2 seconds
+
+        for (let i = 0; i < nodes.length - 1; i++) {
+            const p1 = nodes[i].pos;
+            const p2 = nodes[i + 1].pos;
+
+            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+            const hue = (i / nodes.length) * 60 + 180;
+            gradient.addColorStop(0, `hsla(${hue}, 70%, 60%, ${fade})`);
+            gradient.addColorStop(1, `hsla(${hue + 20}, 70%, 50%, ${fade})`);
+            
+            ctx.strokeStyle = gradient;
+            const baseWidth = 16 - (i / nodes.length) * 8;
+            ctx.lineWidth = baseWidth;
+            
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+        }
+
+        const head = this.getHead();
+        const headRadius = 10;
+        ctx.fillStyle = `rgba(78, 205, 200, ${fade})`;
+        ctx.beginPath();
+        ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     setScore(score) {
