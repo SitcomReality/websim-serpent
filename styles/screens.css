@@ -11,11 +11,13 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
+    z-index: 1;
 }
 
 .screen.active {
     opacity: 1;
     pointer-events: auto;
+    z-index: 10;
 }
 
 .screen-content {
@@ -90,4 +92,3 @@
     color: #fff;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
 }
-
