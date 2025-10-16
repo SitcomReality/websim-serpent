@@ -7,6 +7,10 @@ export class Snake {
         this.segmentLength = 15;
         this.speed = 3;
         this.direction = new Vector2D(1, 0);
+        this.headingAngle = 0;
+        this.turnSpeed = Math.PI; // radians per second
+        this.turnLeft = false;
+        this.turnRight = false;
         
         // Create initial nodes
         const nodes = [];
@@ -16,7 +20,6 @@ export class Snake {
         }
         
         this.chain = new VerletChain(nodes, this.segmentLength);
-        this.inputDirection = new Vector2D(1, 0);
     }
 
     setDirection(dir) {
@@ -25,12 +28,18 @@ export class Snake {
         this.inputDirection = dir;
     }
 
-    update(dt, width, height) {
-        // Smoothly transition direction
-        this.direction.x += (this.inputDirection.x - this.direction.x) * 0.1;
-        this.direction.y += (this.inputDirection.y - this.direction.y) * 0.1;
-        this.direction.normalize();
+    setTurning(left, right) {
+        this.turnLeft = left;
+        this.turnRight = right;
+    }
 
+    update(dt, width, height) {
+        const dtSec = dt / 1000;
+        if (this.turnLeft) this.headingAngle -= this.turnSpeed * dtSec;
+        if (this.turnRight) this.headingAngle += this.turnSpeed * dtSec;
+        this.direction.x = Math.cos(this.headingAngle);
+        this.direction.y = Math.sin(this.headingAngle);
+        
         // Move head
         const head = this.chain.nodes[0];
         head.oldPos = head.pos.copy();
@@ -102,4 +111,3 @@ export class Snake {
         ctx.shadowBlur = 0;
     }
 }
-

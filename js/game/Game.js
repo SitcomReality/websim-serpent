@@ -39,11 +39,7 @@ export class Game {
         
         window.addEventListener('keydown', (e) => {
             this.keys[e.key.toLowerCase()] = true;
-            
-            if (e.key === 'ArrowUp' || e.key === 'w') this.snake.setDirection(new Vector2D(0, -1));
-            if (e.key === 'ArrowDown' || e.key === 's') this.snake.setDirection(new Vector2D(0, 1));
-            if (e.key === 'ArrowLeft' || e.key === 'a') this.snake.setDirection(new Vector2D(-1, 0));
-            if (e.key === 'ArrowRight' || e.key === 'd') this.snake.setDirection(new Vector2D(1, 0));
+            // remove absolute direction controls
         });
 
         window.addEventListener('keyup', (e) => {
@@ -53,6 +49,11 @@ export class Game {
 
     update(dt) {
         if (!this.running) return;
+
+        // set turning based on keys
+        const left = this.keys['arrowleft'] || this.keys['a'];
+        const right = this.keys['arrowright'] || this.keys['d'];
+        this.snake.setTurning(!!left, !!right);
 
         this.snake.update(dt, this.width, this.height);
         this.food.update(dt);
@@ -108,4 +109,3 @@ export class Game {
         this.running = false;
     }
 }
-
