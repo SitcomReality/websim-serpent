@@ -32,7 +32,7 @@ export class GameOverScreen extends Screen {
                 <div id="prev-high-wrap" class="prev-high" style="display:none;">
                     Previous: <span id="prev-high">0</span>
                 </div>
-                <button class="btn" id="menu-btn">Main Menu</button>
+                <button class="btn" id="menu-btn"><span class="tongue"></span>Main Menu</button>
             </div>
         `;
 

@@ -14,8 +14,8 @@ export class PauseMenuScreen extends Screen {
             <div class="screen-content">
                 <h1 class="title">Paused</h1>
                 <div class="pause-menu-buttons">
-                    <button class="btn" id="resume-btn">Return to Game</button>
-                    <button class="btn btn-secondary" id="quit-btn">Quit</button>
+                    <button class="btn" id="resume-btn"><span class="tongue"></span>Return to Game</button>
+                    <button class="btn btn-secondary" id="quit-btn"><span class="tongue"></span>Quit</button>
                 </div>
             </div>
         `;
@@ -24,4 +24,3 @@ export class PauseMenuScreen extends Screen {
         this.element.querySelector('#quit-btn').addEventListener('click', this.onQuit);
     }
 }
-
