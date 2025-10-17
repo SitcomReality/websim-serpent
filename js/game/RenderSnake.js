@@ -96,7 +96,8 @@ export class RenderSnake {
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
 
             // Render eye specular highlights using the dedicated manager
-            this.eyeballHighlights.updateFromSparks(sparks, headNode.pos);
+            // Pass head position and rotation angle for coordinate transformation
+            this.eyeballHighlights.updateFromSparks(sparks, headNode.pos, angle);
             this.eyeballHighlights.render(ctx, this.snake.wobble, this.snake.wobbleAmplitude);
 
             ctx.restore();

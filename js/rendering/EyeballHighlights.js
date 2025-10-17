@@ -26,7 +26,7 @@ export class EyeballHighlights {
         this.rightEyeHighlight = new EyeSpecularHighlight(this.rightEyeCenter, this.eyeRadius);
 
         // Spark particle tracking
-        this.sparkPositions = [];
+        this.sparkPositions = []; // Stores local, de-rotated spark positions
         this.sparkColors = [];
     }
 
@@ -57,16 +57,30 @@ export class EyeballHighlights {
      * Update highlights based on spark particles.
      * @param {Array} sparks - Array of spark particles with pos and color properties
      * @param {Vector2D} headPos - Position of the snake head in world space
+     * @param {number} headAngle - Rotation angle of the head sprite (in radians)
      */
-    updateFromSparks(sparks, headPos) {
+    updateFromSparks(sparks, headPos, headAngle) {
         this.sparkPositions = [];
         this.sparkColors = [];
 
+        // Calculate rotation inverse (negative angle) for transforming world vectors to local head space
+        const inverseAngle = -headAngle;
+        const cosA = Math.cos(inverseAngle);
+        const sinA = Math.sin(inverseAngle);
+
         // Collect nearby sparks
         sparks.forEach(spark => {
-            const dist = headPos.copy().sub(spark.pos).mag();
+            // P_rel_world = spark.pos - headPos
+            const P_rel_world = spark.pos.copy().sub(headPos);
+            const dist = P_rel_world.mag();
+            
             if (dist < 150) { // Only consider sparks within influence range
-                this.sparkPositions.push(spark.pos.copy());
+                // De-rotate P_rel_world to get P_local (in local head sprite space)
+                // This converts the spark position into the coordinate system of the head sprite (0 rotation, center at 0,0)
+                const P_local_x = P_rel_world.x * cosA - P_rel_world.y * sinA;
+                const P_local_y = P_rel_world.x * sinA + P_rel_world.y * cosA;
+
+                this.sparkPositions.push(new Vector2D(P_local_x, P_local_y));
                 this.sparkColors.push(spark.color);
             }
         });
@@ -87,18 +101,19 @@ export class EyeballHighlights {
         let totalColor = { r: 0, g: 0, b: 0, a: 0 };
         let weightSum = 0;
 
-        this.sparkPositions.forEach((sparkPos, i) => {
-            const toEye = eyeCenter.copy().sub(sparkPos);
-            const distance = toEye.mag();
-            if (distance < 0.1) return; // Too close, skip
+        this.sparkPositions.forEach((sparkLocalPos, i) => {
+            // eyeCenter is local, sparkLocalPos is local. Calculate vector from eye center to spark.
+            const eyeToSpark = sparkLocalPos.copy().sub(eyeCenter);
+            const distance = eyeToSpark.mag();
 
-            // Influence decreases with distance
-            const influence = Math.max(0, 1 - distance / 200);
+            // Influence decreases with distance from the specific eye center
+            const localInfluenceRange = this.eyeRadius * 5; 
+            const influence = Math.max(0, 1 - distance / localInfluenceRange);
             if (influence < 0.01) return;
 
             // Calculate azimuth (angle on eyeball surface towards spark)
-            // With front = 0, back = PI
-            const azimuth = Math.atan2(toEye.x, toEye.y);
+            // Azimuth = atan2(Vx, Vy) because (dx, dy) = (sin(A), cos(A)) in EyeSpecularHighlight.js
+            const azimuth = Math.atan2(eyeToSpark.x, eyeToSpark.y);
 
             // Distance from center of eye (bias towards front)
             let surfaceDistance = 0.3 + Math.max(0, Math.cos(azimuth)) * 0.5;

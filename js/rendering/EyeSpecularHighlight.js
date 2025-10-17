@@ -38,13 +38,14 @@ export class EyeSpecularHighlight {
 
     /**
      * Render the highlight on the canvas.
-     * Note: assumes canvas context is already in the correct coordinate system.
+     * Note: assumes canvas context is already in the correct coordinate system (translated and rotated to the head).
      */
     render(ctx) {
         if (this.sizeRatio <= 0.01) return;
         
         // Calculate position on eyeball surface
-        // 0 azimuth is at front (towards bottom of sprite), PI is at back
+        // 0 azimuth is at front (positive Y in local head space), PI is at back (negative Y)
+        // dx = R * sin(A), dy = R * cos(A)
         const dx = Math.sin(this.azimuth) * this.distance;
         const dy = Math.cos(this.azimuth) * this.distance;
         
