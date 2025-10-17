@@ -3,6 +3,13 @@ import { Vector2D } from '../utils/Vector2D.js';
 export class RenderSnake {
     constructor(snake) {
         this.snake = snake;
+        this.headImage = null;
+        this.loadHeadImage();
+    }
+
+    loadHeadImage() {
+        this.headImage = new Image();
+        this.headImage.src = '/head.png';
     }
 
     render(ctx) {
@@ -63,16 +70,43 @@ export class RenderSnake {
             ctx.stroke();
         }
 
-        // Head
+        // Head with image
         const head = this.snake.getHead();
         const headBulge = this.snake.getBulgeFactor(0, timeMs);
-        const headRadius = 10 * headBulge;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#4ecdc4';
-        ctx.fillStyle = '#4ecdc4';
-        ctx.beginPath();
-        ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        
+        if (this.headImage && this.headImage.complete) {
+            // Calculate rotation angle based on direction
+            const angle = Math.atan2(this.snake.direction.y, this.snake.direction.x);
+            
+            // Head image dimensions: 125 x 50
+            const imgWidth = 125;
+            const imgHeight = 50;
+            const scale = headBulge * 0.8; // Scale based on bulge
+            const scaledWidth = imgWidth * scale;
+            const scaledHeight = imgHeight * scale;
+            
+            ctx.save();
+            ctx.translate(head.pos.x, head.pos.y);
+            ctx.rotate(angle);
+            ctx.globalAlpha = 1;
+            ctx.drawImage(
+                this.headImage,
+                -scaledWidth / 2,
+                -scaledHeight / 2,
+                scaledWidth,
+                scaledHeight
+            );
+            ctx.restore();
+        } else {
+            // Fallback to circle if image hasn't loaded
+            const headRadius = 10 * headBulge;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#4ecdc4';
+            ctx.fillStyle = '#4ecdc4';
+            ctx.beginPath();
+            ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
     }
 }

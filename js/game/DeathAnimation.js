@@ -47,23 +47,26 @@ export class DeathAnimation {
             const node = nodes[i];
             const p = node.pos;
             const indexRatio = i / (nodes.length - 1);
-            let radius, hue;
+            
             if (i === 0) {
-                radius = 10;
-                hue = 180;
-                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                // Head - render as circle during death animation
+                const headRadius = 10;
+                ctx.fillStyle = `hsl(180, 70%, 60%)`;
                 ctx.shadowBlur = 10 * fade;
                 ctx.shadowColor = `rgba(78, 205, 200, ${fade * 0.8})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, headRadius, 0, Math.PI * 2);
+                ctx.fill();
             } else {
                 const baseWidth = 16 - indexRatio * 8;
-                radius = baseWidth * 0.5;
-                hue = indexRatio * 60 + 180;
+                const radius = baseWidth * 0.5;
+                const hue = indexRatio * 60 + 180;
                 ctx.fillStyle = `hsl(${hue}, 70%, 55%)`;
                 ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                ctx.fill();
             }
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-            ctx.fill();
         }
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
