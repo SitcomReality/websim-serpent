@@ -6,8 +6,8 @@ export class EyeballHighlights {
         // Correcting the user's coordinates - assuming they meant:
         // Left eye: center at (25, 25), radius 25
         // Right eye: center at (100, 25), radius 25
-        this.leftEyeImageSpace = { x: 100, y: 75, radius: 25 };
-        this.rightEyeImageSpace = { x: 25, y: 75, radius: 25 };
+        this.leftEyeImageSpace = { x: 100, y: 75, radius: 20 };
+        this.rightEyeImageSpace = { x: 25, y: 75, radius: 20 };
 
         // Original image dimensions
         this.imageWidth = 125;

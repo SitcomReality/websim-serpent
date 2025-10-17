@@ -3,8 +3,8 @@ import { Vector2D } from '../utils/Vector2D.js';
 export class BulgeManager {
     constructor(snake) {
         this.snake = snake;
-        this.bulgeDurationPerNode = 100;
-        this.bulgeMagnitude = 2.0;
+        this.bulgeDurationPerNode = 60;
+        this.bulgeMagnitude = 3;
         this.eatEvents = [];
     }
 
@@ -32,7 +32,7 @@ export class BulgeManager {
             const falloff = 1 - Math.pow(progress, 3);
             const currentBulgeMagnitude = 1.0 + (this.bulgeMagnitude - 1.0) * falloff;
             const distance = Math.abs(i - pulseCenterIndex);
-            const radiusOfInfluence = 1.5;
+            const radiusOfInfluence = 3;
             if (distance > radiusOfInfluence) continue;
             const influence = 1 - distance / radiusOfInfluence;
             const influenceSquared = influence * influence;

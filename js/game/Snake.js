@@ -25,8 +25,8 @@ export class Snake {
         this.deathTimer = 0;
         
         // Bulge effect properties
-        this.bulgeDurationPerNode = 100; // ms per node for bulge travel
-        this.bulgeMagnitude = 2.0; // Max scale factor for width/radius (starts at 2x)
+        this.bulgeDurationPerNode = 50; // ms per node for bulge travel
+        this.bulgeMagnitude = 3; // Max scale factor for width/radius (starts at 2x)
         this.eatEvents = []; // Stores timestamps of eat events for multiple bulges
         
         // Create initial nodes
