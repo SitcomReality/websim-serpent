@@ -5,12 +5,14 @@ import { Vector2D } from '../utils/Vector2D.js';
 import { Storage } from '../utils/Storage.js';
 
 export class Game {
-    constructor(canvas, onGameOver) {
+    constructor(canvas, onGameOver, onPause) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
         this.onGameOver = onGameOver;
+        this.onPause = onPause;
         this.running = false;
         this.score = 0;
+        this.paused = false;
         
         this.resize();
         window.addEventListener('resize', () => this.resize());
@@ -34,6 +36,7 @@ export class Game {
         this.foods = [];
         this.ensureFoodCount(1);
         this.gameOverState = false; // Add game over state
+        this.paused = false;
         
         this.setupInput();
     }
@@ -41,8 +44,13 @@ export class Game {
     setupInput() {
         this.keys = {};
         
-        window.addEventListener('keydown', (e) => {
+        this.handleKeyDown = (e) => {
             this.keys[e.key.toLowerCase()] = true;
+
+            if (e.key === 'Escape') {
+                this.onPause();
+            }
+
             // Debug: simulate eating with '+' (main keyboard or numpad)
             const plusPressed = e.key === '+' || e.code === 'NumpadAdd' || (e.key === '=' && e.shiftKey) || e.key === 'Add';
             if (!this.gameOverState && plusPressed) {
@@ -53,19 +61,32 @@ export class Game {
                 this.smokeSystem.emitSparks(head.pos.x, head.pos.y, 20);
             }
             // remove absolute direction controls
-        });
+        };
 
-        window.addEventListener('keyup', (e) => {
+        this.handleKeyUp = (e) => {
             this.keys[e.key.toLowerCase()] = false;
-        });
+        };
+
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
     }
 
     update(dt) {
         if (!this.running) return;
 
-        // Always update snake and smoke for death animation
-        this.snake.update(dt, this.width, this.height);
+        // Death animation can still play while paused/game over
+        if (this.snake.isDead) {
+            this.snake.update(dt, this.width, this.height);
+        }
+        
         this.smokeSystem.update(dt);
+        
+        if (this.paused) return;
+
+        // If not dead, update snake
+        if (!this.snake.isDead) {
+            this.snake.update(dt, this.width, this.height);
+        }
 
         // If in game over transition, skip game logic
         if (this.gameOverState) return;
@@ -152,12 +173,26 @@ export class Game {
         });
     }
 
+    pause() {
+        this.paused = true;
+    }
+
+    resume() {
+        this.paused = false;
+    }
+
+    isPaused() {
+        return this.paused;
+    }
+
     getScore() {
         return this.score;
     }
 
     destroy() {
         this.running = false;
+        window.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener('keyup', this.handleKeyUp);
     }
 
     ensureFoodCount(target) {

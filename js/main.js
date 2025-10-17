@@ -2,6 +2,7 @@ import { Game } from './game/Game.js';
 import { MainMenuScreen } from './ui/MainMenuScreen.js';
 import { GameScreen } from './ui/GameScreen.js';
 import { GameOverScreen } from './ui/GameOverScreen.js';
+import { PauseMenuScreen } from './ui/PauseMenuScreen.js';
 
 class App {
     constructor() {
@@ -18,12 +19,17 @@ class App {
 
     initScreens() {
         this.mainMenuScreen = new MainMenuScreen(() => this.startGame());
-        this.gameScreen = new GameScreen();
+        this.gameScreen = new GameScreen(() => this.togglePause());
         this.gameOverScreen = new GameOverScreen(() => this.showMainMenu());
+        this.pauseMenuScreen = new PauseMenuScreen(
+            () => this.togglePause(), // onResume
+            () => this.showMainMenu()  // onQuit
+        );
 
         this.mainMenuScreen.mount(this.uiContainer);
         this.gameScreen.mount(this.uiContainer);
         this.gameOverScreen.mount(this.uiContainer);
+        this.pauseMenuScreen.mount(this.uiContainer);
     }
 
     showScreen(screen) {
@@ -43,9 +49,25 @@ class App {
     }
 
     startGame() {
-        this.game = new Game(this.canvas, (result) => this.handleGameOver(result));
+        this.game = new Game(this.canvas, 
+            (result) => this.handleGameOver(result),
+            () => this.togglePause() // onPause callback
+        );
         this.game.init();
         this.showScreen(this.gameScreen);
+    }
+
+    togglePause() {
+        if (!this.game || this.game.gameOverState) return;
+        
+        if (this.game.isPaused()) {
+            this.game.resume();
+            this.pauseMenuScreen.hide();
+            this.gameScreen.show();
+        } else {
+            this.game.pause();
+            this.pauseMenuScreen.show();
+        }
     }
 
     handleGameOver(result) {
