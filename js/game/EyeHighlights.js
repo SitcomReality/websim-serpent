@@ -1,7 +1,7 @@
 import { Vector2D } from '../utils/Vector2D.js';
 
 class HighlightParticle {
-    constructor(isLeftEye, color) {
+    constructor(isLeftEye, color, yShiftBias) {
         this.isLeftEye = isLeftEye;
         this.color = color;
         this.life = 0.5 + Math.random() * 0.5; // 0.5 to 1.0 seconds
@@ -12,11 +12,13 @@ class HighlightParticle {
         const startAngle = Math.PI * (0.25 + Math.random() * 0.5); // Bottom part of circle
         const startRadius = 0.5 + Math.random() * 0.2;
         this.pos = new Vector2D(Math.cos(startAngle) * startRadius, Math.sin(startAngle) * startRadius);
+        this.pos.y += yShiftBias; // Shift forward
 
         // Move towards the back (top of sprite, so negative y)
         const endAngle = Math.PI * (1.25 + Math.random() * 0.5); // Top part of circle
         const endRadius = 0.3 + Math.random() * 0.4;
         this.endPos = new Vector2D(Math.cos(endAngle) * endRadius, Math.sin(endAngle) * endRadius);
+        this.endPos.y += yShiftBias; // Shift forward
     }
 
     update(dt) {
@@ -41,14 +43,17 @@ export class EyeHighlights {
             left:  { center: new Vector2D(25, 25), radius: 25 },
             right: { center: new Vector2D(100, 25), radius: 25 }
         };
+        // Bias to shift highlights towards the front (positive Y in sprite space). 
+        // 0.3 is roughly centered forward of the eye midpoint.
+        this.Y_SHIFT_BIAS = 0.3; 
     }
 
     triggerSparkleEffect() {
         const colors = ['#ff6b6b', '#ffd166', '#6bf2ff', '#9b8cff', '#4ecdc4', '#ff99c8'];
         for (let i = 0; i < 6; i++) {
             const color = colors[Math.floor(Math.random() * colors.length)];
-            this.particles.push(new HighlightParticle(true, color)); // Left eye
-            this.particles.push(new HighlightParticle(false, color)); // Right eye
+            this.particles.push(new HighlightParticle(true, color, this.Y_SHIFT_BIAS)); // Left eye
+            this.particles.push(new HighlightParticle(false, color, this.Y_SHIFT_BIAS)); // Right eye
         }
     }
 
@@ -87,18 +92,16 @@ export class EyeHighlights {
                 const baseColor = `255,159,243`;
                 ctx.fillStyle = `rgba(${baseColor}, ${highlightAlpha * 0.5})`;
                 const eye = wobbleSign > 0 ? this.eyeData.left : this.eyeData.right; // right wobble -> left eye highlight
-                const highlightPos = new Vector2D(-0.5 * wobbleSign, -0.5); // back and to the side
+                
+                // Shifted Y from -0.5 (back) to Y_SHIFT_BIAS (0.3) for a forward position.
+                const highlightPos = new Vector2D(-0.5 * wobbleSign, this.Y_SHIFT_BIAS); 
 
                 const eyeCenterX = eye.center.x * scaleX;
                 const eyeCenterY = eye.center.y * scaleY;
                 const eyeRadius = eye.radius * scaleX * 0.4;
 
-                // bias the highlight forward: scale down UV y and add a small forward offset
-                const biasY = 0.25;
-                const adjHx = highlightPos.x;
-                const adjHy = highlightPos.y * 0.5 + biasY;
-                const hx = eyeCenterX + adjHx * eye.radius * scaleX;
-                const hy = eyeCenterY + adjHy * eye.radius * scaleY;
+                const hx = eyeCenterX + highlightPos.x * eye.radius * scaleX;
+                const hy = eyeCenterY + highlightPos.y * eye.radius * scaleY;
 
                 ctx.beginPath();
                 ctx.arc(hx, hy, eyeRadius, 0, Math.PI * 2);
@@ -115,12 +118,8 @@ export class EyeHighlights {
             const eyeCenterY = eye.center.y * scaleY;
             const eyeRadius = eye.radius * scaleX * 0.3; // smaller highlight
 
-            // bias sparkles forward: reduce travel amplitude and nudge toward front (bottom)
-            const biasY = 0.25;
-            const adjUvX = uvPos.x;
-            const adjUvY = uvPos.y * 0.5 + biasY;
-            const hx = eyeCenterX + adjUvX * eye.radius * scaleX;
-            const hy = eyeCenterY + adjUvY * eye.radius * scaleY;
+            const hx = eyeCenterX + uvPos.x * eye.radius * scaleX;
+            const hy = eyeCenterY + uvPos.y * eye.radius * scaleY;
 
             const alpha = Math.min(1, p.life / p.maxLife * 2);
             ctx.fillStyle = p.color;
