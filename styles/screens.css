@@ -109,16 +109,17 @@
     fill: url(#snakeGradient);
     stroke: none;
     filter: drop-shadow(0 0 15px rgba(78, 205, 200, 0.3)) drop-shadow(0 0 15px rgba(142, 68, 173, 0.3));
-    transition: filter 0.3s ease;
+    transform-origin: 25% 50%; /* Anchor near the head for tail jiggle */
+    transition: filter 0.3s ease, transform 0.3s ease;
 }
 
 /* Tongue path */
 .btn .snake-tongue {
-    fill: #ff7675;
+    fill: none; /* Ensure no fill, it uses stroke */
     filter: drop-shadow(0 0 8px rgba(255, 118, 117, 0.7));
     opacity: 0;
-    transform-origin: 95% 50%;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transform-origin: 30% 50%; /* Origin near the mouth */
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* Text stays on top */
@@ -133,11 +134,12 @@
 
 .btn:hover .snake-body {
     filter: drop-shadow(0 0 25px rgba(78, 205, 200, 0.5)) drop-shadow(0 0 25px rgba(142, 68, 173, 0.5));
+    animation: snakeTailJiggle 0.5s ease-in-out infinite alternate;
 }
 
 .btn:hover .snake-tongue {
     opacity: 1;
-    transform: scaleX(1) rotate(-15deg);
+    animation: tongueFlicker 0.15s steps(1) infinite alternate;
 }
 
 .btn:active {
@@ -155,6 +157,18 @@
 .btn-secondary:hover .snake-body {
     fill: rgba(142, 68, 173, 0.3);
     filter: drop-shadow(0 0 25px rgba(142, 68, 173, 0.6));
+}
+
+/* New button animations */
+@keyframes snakeTailJiggle {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(1.5deg); }
+}
+
+@keyframes tongueFlicker {
+    0% { transform: scaleX(1) translateY(0); }
+    50% { transform: scaleX(0.98) translateY(1px); }
+    100% { transform: scaleX(1.02) translateY(-1px); }
 }
 
 .new-high-badge {

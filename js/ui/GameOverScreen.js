@@ -40,8 +40,8 @@ export class GameOverScreen extends Screen {
                                 <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1" />
                             </linearGradient>
                         </defs>
-                        <path class="snake-body" d="M 20,30 Q 30,10 50,10 L 150,10 Q 170,10 170,30 Q 170,50 150,50 L 50,50 Q 30,50 20,30 Z" />
-                        <path class="snake-tongue" d="M 15,28 L 5,20 M 15,32 L 5,40" stroke="#ff7675" stroke-width="2" stroke-linecap="round" fill="none" />
+                        <path class="snake-body" d="M 190, 30 Q 175, 10, 150, 10 L 50, 10 Q 25, 10, 25, 30 Q 25, 50, 50, 50 L 150, 50 Q 175, 50, 190, 30 Z" />
+                        <path class="snake-tongue" d="M 30, 27 L 10, 20 M 30, 33 L 10, 40" stroke="#ff7675" stroke-width="2" stroke-linecap="round" fill="none" />
                     </svg>
                     <span>Main Menu</span>
                 </button>
@@ -53,4 +53,3 @@ export class GameOverScreen extends Screen {
         });
     }
 }
-
