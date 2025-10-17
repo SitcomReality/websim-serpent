@@ -1,9 +1,9 @@
 export class EyeSpecular {
     // Eye geometry (relative to sprite center after rotation)
-    // For a 125x50 head sprite the eyeballs are roughly at (25,17) and (100,17).
-    // Converted to sprite-center coordinates (center at 62.5,25) -> (-37.5,-8) and (37.5,-8)
-    static LEFT_EYE = { x: -37.5, y: -8 };
-    static RIGHT_EYE = { x: 37.5, y: -8 };
+    // These match the actual head sprite dimensions (125x50)
+    // Eyes are positioned in the upper portion of the sprite
+    static LEFT_EYE = { x: -31.25, y: -8.5 };
+    static RIGHT_EYE = { x: 31.25, y: -8.5 };
     static EYE_RADIUS = 15;
 
     static getSparkHighlights(sparks, headWorldPos, headWorldAngle) {
@@ -62,8 +62,7 @@ export class EyeSpecular {
         };
 
         // Place highlights with bias towards front of eye (positive Y in sprite space)
-        // scale highlight offset relative to the eyeball radius so it follows sprite scaling
-        const highlightOffset = this.EYE_RADIUS * 0.8; // distance from eye center
+        const highlightOffset = 12; // distance from eye center
         const frontBias = 5; // slight bias towards front
 
         const highlight = {
