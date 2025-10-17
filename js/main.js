@@ -64,9 +64,11 @@ class App {
             this.game.resume();
             this.pauseMenuScreen.hide();
             this.gameScreen.show();
+            this.showScreen(this.gameScreen);
         } else {
             this.game.pause();
-            this.pauseMenuScreen.show();
+            // make pause screen the active screen so it will be hidden when switching to main menu
+            this.showScreen(this.pauseMenuScreen);
         }
     }
 
