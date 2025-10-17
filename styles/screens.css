@@ -27,6 +27,11 @@
     padding: 2rem;
 }
 
+/* Splash title image sizing and footer logo */
+.splash-title { max-width: 80%; height: auto; display: block; margin: 0 auto 1rem; }
+.splash-footer { margin-top: 2rem; display:flex; justify-content:center; align-items:center; }
+.sr-logo { width: 250px; height: auto; opacity: 0.95; }
+
 .title {
     font-size: 4rem;
     font-weight: 700;
