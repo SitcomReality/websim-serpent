@@ -77,8 +77,10 @@ export class RenderSnake {
         // displayHeadRadius is 25% larger than the base headRadius for rendering only
         const displayHeadRadius = headRadius * 1.25;
         
-        // 1. Set the dynamic eye geometry based on the current head scale
-        this.eyeballHighlights.setGeometry(displayHeadRadius);
+        // 1. Set dynamic eye geometry from the actual drawn sprite size
+        const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
+        const imgH = displayHeadRadius * 2, imgW = imgH * aspect;
+        this.eyeballHighlights.setGeometryByDrawnSize(imgW, imgH);
         
         // draw sprite if loaded, otherwise fallback to circle
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
@@ -89,10 +91,7 @@ export class RenderSnake {
             const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
             ctx.rotate(angle);
             const size = displayHeadRadius * 2;
-            // preserve the sprite's native aspect ratio: use sprite's natural width/height
-            const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
-            const imgH = size; // use computed size as the sprite height
-            const imgW = imgH * aspect;
+            // imgW/imgH computed above to drive both drawing and eye geometry
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
 
             // Render eye specular highlights using the dedicated manager

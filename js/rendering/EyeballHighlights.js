@@ -4,11 +4,10 @@ import { Vector2D } from '../utils/Vector2D.js';
 // Define base eye geometry relative to the center of a 125x50 sprite.
 // Based on TL corners (25, 17) and (100, 17) for eye centers, and radius 15.
 // Center of 125x50 sprite is (62.5, 25).
-const BASE_EYE_RADIUS = 15;
-const BASE_LEFT_EYE_CENTER_X = 25 - 62.5; // -37.5
-const BASE_RIGHT_EYE_CENTER_X = 100 - 62.5; // 37.5
-const BASE_EYE_CENTER_Y = 17 - 25;       // -8.0
-const BASE_HEAD_HEIGHT = 50; // Reference height of the original sprite (in pixels)
+const EYE_RADIUS_FRAC = 15 / 50;    // radius as fraction of sprite height
+const LEFT_EYE_FX = 25 / 125;       // fractional X within sprite width
+const RIGHT_EYE_FX = 100 / 125;
+const EYE_FY = 17 / 50;             // fractional Y within sprite height
 
 /**
  * Manages specular highlights for both eyeballs.
@@ -34,21 +33,13 @@ export class EyeballHighlights {
      * Set the current eye geometry based on the dynamically rendered head size.
      * @param {number} displayHeadRadius - Half of the rendered sprite height (H'/2).
      */
-    setGeometry(displayHeadRadius) {
-        // Calculate scale factor relative to the sprite's native height (50px)
-        // Rendered Height H' = 2 * displayHeadRadius
-        const scaleFactor = (2 * displayHeadRadius) / BASE_HEAD_HEIGHT; 
-        
-        this.eyeRadius = BASE_EYE_RADIUS * scaleFactor;
-        
-        // Update center positions in local space
-        this.leftEyeCenter.x = BASE_LEFT_EYE_CENTER_X * scaleFactor;
-        this.leftEyeCenter.y = BASE_EYE_CENTER_Y * scaleFactor;
-        
-        this.rightEyeCenter.x = BASE_RIGHT_EYE_CENTER_X * scaleFactor;
-        this.rightEyeCenter.y = BASE_EYE_CENTER_Y * scaleFactor;
-
-        // Update radius reference in highlight objects (since radius is a primitive)
+    setGeometryByDrawnSize(imgW, imgH) {
+        // centers relative to the current drawn image size, origin at center (0,0)
+        const cxL = (LEFT_EYE_FX - 0.5) * imgW, cy = (EYE_FY - 0.5) * imgH;
+        const cxR = (RIGHT_EYE_FX - 0.5) * imgW;
+        this.leftEyeCenter.x = cxL; this.leftEyeCenter.y = cy;
+        this.rightEyeCenter.x = cxR; this.rightEyeCenter.y = cy;
+        this.eyeRadius = EYE_RADIUS_FRAC * imgH;
         this.leftEyeHighlight.eyeRadius = this.eyeRadius;
         this.rightEyeHighlight.eyeRadius = this.eyeRadius;
     }
