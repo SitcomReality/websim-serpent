@@ -246,8 +246,8 @@
 }
 
 .btn-icon svg {
-    width: 28px;
-    height: 28px;
+    width: 48px;
+    height: auto;
     stroke: #fff;
 }
 
