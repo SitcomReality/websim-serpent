@@ -3,6 +3,7 @@ import { Food } from './Food.js';
 import { SmokeSystem } from '../effects/SmokeSystem.js';
 import { Vector2D } from '../utils/Vector2D.js';
 import { Storage } from '../utils/Storage.js';
+import { SFX } from '../audio/SFX.js';
 
 export class Game {
     constructor(canvas, onGameOver, onPause) {
@@ -119,11 +120,13 @@ export class Game {
         this.foods = this.foods.filter(f => {
             if (f.isExpired()) { 
                 this.smokeSystem.emitPoof(f.pos.x, f.pos.y); 
+                SFX.play('bubbledown');
                 return false;
             }
             if (head.pos.dist(f.pos) < head.radius + f.radius) {
                 this.score++;
                 this.snake.grow();
+                SFX.play('omnom');
                 this.smokeSystem.emitSplash(f.pos.x, f.pos.y);
                 this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 20);
                 return false;
@@ -196,6 +199,10 @@ export class Game {
     }
 
     ensureFoodCount(target) {
-        while (this.foods.length < target) this.foods.push(Food.spawn(this.width, this.height));
+        while (this.foods.length < target) {
+            const f = Food.spawn(this.width, this.height);
+            this.foods.push(f);
+            SFX.play('bubbleup');
+        }
     }
 }

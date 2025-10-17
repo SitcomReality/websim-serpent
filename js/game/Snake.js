@@ -85,6 +85,7 @@ export class Snake {
 
         // Apply chain constraints
         this.chain.update(5);
+        this.bulgeManager.update(this._time * 1000);
     }
 
     die() {
