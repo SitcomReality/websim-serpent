@@ -163,14 +163,14 @@
 
 /* New button animations */
 @keyframes snakeTailJiggle {
-    0% { transform: rotate(0deg); }
+    0% { transform: rotate(-1.5deg); }
     100% { transform: rotate(1.5deg); }
 }
 
 @keyframes tongueFlicker {
-    0% { transform: scaleX(1) translateY(0); }
-    50% { transform: scaleX(0.98) translateY(1px); }
-    100% { transform: scaleX(1.02) translateY(-1px); }
+    0% { transform: scaleX(0.9) scaleY(1) translateX(-4px); }
+    50% { transform: scaleX(1.2) scaleY(1.5) translateX(5px); }
+    100% { transform: scaleX(0.9) scaleY(1) translateX(-4px); }
 }
 
 .new-high-badge {
