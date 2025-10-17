@@ -23,7 +23,9 @@
 .screen-content {
     text-align: center;
     color: #fff;
-    max-width: 600px;
+    /* allow the content area to expand up to the title image width so the image centers nicely */
+    width: min(90vw, 1012px);
+    max-width: 1012px;
     padding: 2rem;
 }
 
