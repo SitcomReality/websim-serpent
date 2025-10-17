@@ -1,26 +1,56 @@
 import { EyeSpecularHighlight } from './EyeSpecularHighlight.js';
 import { Vector2D } from '../utils/Vector2D.js';
 
+// Define base eye geometry relative to the center of a 125x50 sprite.
+// Based on TL corners (25, 17) and (100, 17) for eye centers, and radius 15.
+// Center of 125x50 sprite is (62.5, 25).
+const BASE_EYE_RADIUS = 15;
+const BASE_LEFT_EYE_CENTER_X = 25 - 62.5; // -37.5
+const BASE_RIGHT_EYE_CENTER_X = 100 - 62.5; // 37.5
+const BASE_EYE_CENTER_Y = 17 - 25;       // -8.0
+const BASE_HEAD_HEIGHT = 50; // Reference height of the original sprite (in pixels)
+
 /**
  * Manages specular highlights for both eyeballs.
  * Calculates highlight positions and colors based on particle effects and wobble.
  */
 export class EyeballHighlights {
     constructor() {
-        // Eye positions relative to sprite center (will be set by RenderSnake)
-        // For a 125x50 sprite with eyes roughly in the upper portion:
-        // Left eye: center at (25, 17), radius ~15
-        // Right eye: center at (100, 17), radius ~15
-        this.leftEyeCenter = new Vector2D(-31.25, -8.5);
-        this.rightEyeCenter = new Vector2D(31.25, -8.5);
-        this.eyeRadius = 15;
+        // Initialize vector objects which will be continuously updated
+        this.leftEyeCenter = new Vector2D(0, 0);
+        this.rightEyeCenter = new Vector2D(0, 0);
+        this.eyeRadius = 0; // Will be set dynamically
 
+        // Highlights are instantiated once, referencing the dynamic centers and radius
         this.leftEyeHighlight = new EyeSpecularHighlight(this.leftEyeCenter, this.eyeRadius);
         this.rightEyeHighlight = new EyeSpecularHighlight(this.rightEyeCenter, this.eyeRadius);
 
         // Spark particle tracking
         this.sparkPositions = [];
         this.sparkColors = [];
+    }
+
+    /**
+     * Set the current eye geometry based on the dynamically rendered head size.
+     * @param {number} displayHeadRadius - Half of the rendered sprite height (H'/2).
+     */
+    setGeometry(displayHeadRadius) {
+        // Calculate scale factor relative to the sprite's native height (50px)
+        // Rendered Height H' = 2 * displayHeadRadius
+        const scaleFactor = (2 * displayHeadRadius) / BASE_HEAD_HEIGHT; 
+        
+        this.eyeRadius = BASE_EYE_RADIUS * scaleFactor;
+        
+        // Update center positions in local space
+        this.leftEyeCenter.x = BASE_LEFT_EYE_CENTER_X * scaleFactor;
+        this.leftEyeCenter.y = BASE_EYE_CENTER_Y * scaleFactor;
+        
+        this.rightEyeCenter.x = BASE_RIGHT_EYE_CENTER_X * scaleFactor;
+        this.rightEyeCenter.y = BASE_EYE_CENTER_Y * scaleFactor;
+
+        // Update radius reference in highlight objects (since radius is a primitive)
+        this.leftEyeHighlight.eyeRadius = this.eyeRadius;
+        this.rightEyeHighlight.eyeRadius = this.eyeRadius;
     }
 
     /**

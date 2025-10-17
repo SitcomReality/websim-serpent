@@ -1,5 +1,5 @@
 import { Vector2D } from '../utils/Vector2D.js';
-import { EyeSpecular } from './EyeSpecular.js';
+import { EyeballHighlights } from '../rendering/EyeballHighlights.js';
 
 export class RenderSnake {
     constructor(snake) {
@@ -7,6 +7,9 @@ export class RenderSnake {
         // load head sprite once
         this.headImg = new Image();
         this.headImg.src = '/head.png';
+        
+        // Initialize highlight manager
+        this.eyeballHighlights = new EyeballHighlights();
     }
 
     render(ctx, sparks = []) {
@@ -73,6 +76,10 @@ export class RenderSnake {
         const headRadius = 10 * headBulge;
         // displayHeadRadius is 25% larger than the base headRadius for rendering only
         const displayHeadRadius = headRadius * 1.25;
+        
+        // 1. Set the dynamic eye geometry based on the current head scale
+        this.eyeballHighlights.setGeometry(displayHeadRadius);
+        
         // draw sprite if loaded, otherwise fallback to circle
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
             ctx.save();
@@ -88,8 +95,9 @@ export class RenderSnake {
             const imgW = imgH * aspect;
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
 
-            // Render eye specular highlights
-            this.renderEyeSpeculars(ctx, angle, head.pos, displayHeadRadius, sparks);
+            // Render eye specular highlights using the dedicated manager
+            this.eyeballHighlights.updateFromSparks(sparks, head.pos);
+            this.eyeballHighlights.render(ctx, this.snake.wobble, this.snake.wobbleAmplitude);
 
             ctx.restore();
         } else {
@@ -100,37 +108,6 @@ export class RenderSnake {
             ctx.arc(head.pos.x, head.pos.y, displayHeadRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
-        }
-    }
-
-    renderEyeSpeculars(ctx, headAngle, headWorldPos, headRadius, sparks) {
-        // Get specular highlights from both light sources
-        const sparkHighlights = EyeSpecular.getSparkHighlights(sparks, headWorldPos, headAngle);
-        const wobbleHighlights = EyeSpecular.getWobbleHighlights(
-            this.snake.wobble,
-            Math.sign(this.snake.wobble),
-            this.snake.wobbleAmplitude
-        );
-
-        // Render highlights for left eye
-        const leftEyeWorldPos = {
-            x: headWorldPos.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.x - Math.sin(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.y,
-            y: headWorldPos.y + Math.sin(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.y
-        };
-
-        const rightEyeWorldPos = {
-            x: headWorldPos.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.x - Math.sin(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.y,
-            y: headWorldPos.y + Math.sin(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.y
-        };
-
-        if (sparkHighlights.left) {
-            EyeSpecular.renderEyeHighlights(ctx, leftEyeWorldPos, EyeSpecular.EYE_RADIUS, sparkHighlights.left);
-            EyeSpecular.renderEyeHighlights(ctx, rightEyeWorldPos, EyeSpecular.EYE_RADIUS, sparkHighlights.right);
-        }
-
-        if (wobbleHighlights.left) {
-            EyeSpecular.renderEyeHighlights(ctx, leftEyeWorldPos, EyeSpecular.EYE_RADIUS, wobbleHighlights.left);
-            EyeSpecular.renderEyeHighlights(ctx, rightEyeWorldPos, EyeSpecular.EYE_RADIUS, wobbleHighlights.right);
         }
     }
 }
