@@ -148,7 +148,7 @@ export class Game {
 
         this.smokeSystem.render(this.ctx);
         this.foods.forEach(f => f.render(this.ctx));
-        this.snake.render(this.ctx);
+        this.snake.render(this.ctx, this.smokeSystem.sparks);
     }
 
     gameOver() {

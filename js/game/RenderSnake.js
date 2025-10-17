@@ -1,4 +1,5 @@
 import { Vector2D } from '../utils/Vector2D.js';
+import { EyeSpecular } from './EyeSpecular.js';
 
 export class RenderSnake {
     constructor(snake) {
@@ -8,7 +9,7 @@ export class RenderSnake {
         this.headImg.src = '/head.png';
     }
 
-    render(ctx) {
+    render(ctx, sparks = []) {
         const nodes = this.snake.chain.nodes;
         const timeMs = this.snake._time * 1000;
 
@@ -86,6 +87,10 @@ export class RenderSnake {
             const imgH = size; // use computed size as the sprite height
             const imgW = imgH * aspect;
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
+
+            // Render eye specular highlights
+            this.renderEyeSpeculars(ctx, angle, head.pos, displayHeadRadius, sparks);
+
             ctx.restore();
         } else {
             ctx.shadowBlur = 20;
@@ -95,6 +100,37 @@ export class RenderSnake {
             ctx.arc(head.pos.x, head.pos.y, displayHeadRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
+        }
+    }
+
+    renderEyeSpeculars(ctx, headAngle, headWorldPos, headRadius, sparks) {
+        // Get specular highlights from both light sources
+        const sparkHighlights = EyeSpecular.getSparkHighlights(sparks, headWorldPos, headAngle);
+        const wobbleHighlights = EyeSpecular.getWobbleHighlights(
+            this.snake.wobble,
+            Math.sign(this.snake.wobble),
+            this.snake.wobbleAmplitude
+        );
+
+        // Render highlights for left eye
+        const leftEyeWorldPos = {
+            x: headWorldPos.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.x - Math.sin(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.y,
+            y: headWorldPos.y + Math.sin(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.LEFT_EYE.y
+        };
+
+        const rightEyeWorldPos = {
+            x: headWorldPos.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.x - Math.sin(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.y,
+            y: headWorldPos.y + Math.sin(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.x + Math.cos(headAngle - Math.PI / 2) * EyeSpecular.RIGHT_EYE.y
+        };
+
+        if (sparkHighlights.left) {
+            EyeSpecular.renderEyeHighlights(ctx, leftEyeWorldPos, EyeSpecular.EYE_RADIUS, sparkHighlights.left);
+            EyeSpecular.renderEyeHighlights(ctx, rightEyeWorldPos, EyeSpecular.EYE_RADIUS, sparkHighlights.right);
+        }
+
+        if (wobbleHighlights.left) {
+            EyeSpecular.renderEyeHighlights(ctx, leftEyeWorldPos, EyeSpecular.EYE_RADIUS, wobbleHighlights.left);
+            EyeSpecular.renderEyeHighlights(ctx, rightEyeWorldPos, EyeSpecular.EYE_RADIUS, wobbleHighlights.right);
         }
     }
 }
