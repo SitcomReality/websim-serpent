@@ -32,7 +32,19 @@ export class GameOverScreen extends Screen {
                 <div id="prev-high-wrap" class="prev-high" style="display:none;">
                     Previous: <span id="prev-high">0</span>
                 </div>
-                <button class="btn" id="menu-btn">Main Menu</button>
+                <button class="btn" id="menu-btn">
+                    <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="snakeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#4ecdc4;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#8e44ad;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path class="snake-body" d="M 20,30 Q 30,10 50,10 L 150,10 Q 170,10 170,30 Q 170,50 150,50 L 50,50 Q 30,50 20,30 Z" />
+                        <path class="snake-tongue" d="M 15,28 L 5,20 M 15,32 L 5,40" stroke="#ff7675" stroke-width="2" stroke-linecap="round" fill="none" />
+                    </svg>
+                    <span>Main Menu</span>
+                </button>
             </div>
         `;
 
@@ -41,3 +53,4 @@ export class GameOverScreen extends Screen {
         });
     }
 }
+
