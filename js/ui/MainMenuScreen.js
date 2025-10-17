@@ -12,7 +12,7 @@ export class MainMenuScreen extends Screen {
             <div class="screen-content">
                 <img src="/serpent-title.jpg" alt="Serpent" class="splash-title" width="1012" height="300" />
                 <p class="subtitle">A Physics-Enhanced Snake Experience</p>
-                <button class="btn" id="start-btn"><span class="tongue"></span>Start Game</button>
+                <button class="btn" id="start-btn">Start Game</button>
                 <div class="splash-footer">
                     <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
                 </div>
