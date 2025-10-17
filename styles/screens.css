@@ -74,7 +74,7 @@
 .high-score { color:#fff; font-size:1.3rem; margin-bottom:0.5rem; text-shadow: 0 0 8px rgba(255, 255, 255, 0.2); }
 
 .btn {
-    padding: 1rem 3.6rem 1rem 3.6rem; /* room for tongue/tail */
+    padding: 1rem 3rem;
     font-size: 1.2rem;
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
@@ -84,56 +84,67 @@
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-    margin: 0.5rem;
-    border-radius: 999px;
-    overflow: visible; /* allow tongue/tail to hang out */
+    transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+    margin: 0.5rem 2rem; /* Added horizontal margin for tail/tongue */
+    border-radius: 50px;
     box-shadow: 0 0 15px rgba(78, 205, 200, 0.3), 0 0 15px rgba(142, 68, 173, 0.3);
     position: relative;
+    overflow: visible; /* Allow pseudo-elements to show outside */
     z-index: 1;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    left: -22px; top: 50%;
-    width: 28px; height: 14px;
-    background: linear-gradient(180deg, #ff6b6b, #d84a4a);
-    clip-path: polygon(100% 25%, 100% 75%, 40% 75%, 30% 100%, 20% 75%, 0 75%, 0 25%, 20% 25%, 30% 0, 40% 25%);
-    border-radius: 10px;
-    transform: translateY(-50%) rotate(0deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-}
-
+/* Base for tongue and tail */
+.btn::before,
 .btn::after {
     content: '';
     position: absolute;
-    right: -18px; top: 50%;
-    width: 22px; height: 22px;
-    background: linear-gradient(180deg, #6bf2ff, #4ecdc4);
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    z-index: -1;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* Tongue */
+.btn::before {
+    top: 50%;
+    left: -5px;
+    width: 20px;
+    height: 3px;
+    background: #ff7675;
     border-radius: 2px;
-    transform: translateY(-50%) rotate(0deg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    transform-origin: left center;
+    transform: translateY(-50%) scaleX(0); /* Hidden by default */
+    box-shadow: 0 0 8px rgba(255, 118, 117, 0.7);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 25% 50%); /* Fork shape */
+}
+
+/* Tail */
+.btn::after {
+    height: 90%;
+    width: 30px;
+    background: linear-gradient(135deg, #8e44ad, #4ecdc4);
+    top: 5%;
+    right: -25px;
+    border-radius: 0 50% 50% 0;
+    transform-origin: left center;
 }
 
 .btn:hover {
-    transform: translateY(-2px) scale(1.015);
+    transform: translateY(-3px) scale(1.02);
     box-shadow: 0 0 25px rgba(78, 205, 200, 0.5), 0 0 25px rgba(142, 68, 173, 0.5);
+    background: linear-gradient(45deg, #5ef7e9, #a059d3);
 }
 
+/* Tongue animation on hover */
 .btn:hover::before {
-    transform: translateY(-50%) rotate(-8deg);
-    filter: brightness(1.08);
+    transform: translateY(-50%) scaleX(1) rotate(-10deg);
 }
 
+/* Tail animation on hover */
 .btn:hover::after {
-    transform: translateY(-50%) rotate(10deg);
-    filter: brightness(1.08);
+    transform: rotate(15deg);
 }
 
 .btn:active {
-    transform: translateY(0) scale(0.985);
+    transform: translateY(0) scale(0.98);
 }
 
 .new-high-badge {
@@ -205,7 +216,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
 }
 
 .btn-icon svg {
@@ -238,12 +248,12 @@
     box-shadow: 0 0 15px rgba(142, 68, 173, 0.4);
 }
 
+/* Secondary button tail color */
+.btn-secondary::after {
+    background: #8e44ad;
+}
+
 .btn-secondary:hover {
     background: rgba(142, 68, 173, 0.3);
     box-shadow: 0 0 25px rgba(142, 68, 173, 0.6);
-}
-
-.btn.btn-icon::before,
-.btn.btn-icon::after {
-    transform: translateY(-50%) scale(0.8);
 }
