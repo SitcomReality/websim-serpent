@@ -4,7 +4,8 @@ export const SFX = {
         bubbleup: '/sfx/bubbleup.wav',
         bubbledown: '/sfx/bubbledown.wav',
         omnom: '/sfx/omnom.wav',
-        nom: '/sfx/nom.wav'
+        nom: '/sfx/nom.wav',
+        plorble: '/sfx/plorble.wav'
     },
     play(name) {
         if (this.muted) return;
@@ -17,4 +18,3 @@ export const SFX = {
     toggleMute() { this.muted = !this.muted; },
     isMuted() { return this.muted; }
 };
-

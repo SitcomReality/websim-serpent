@@ -158,7 +158,9 @@ export class Game {
         if (this.gameOverState) return; // Prevent multiple triggers
         this.gameOverState = true;
         this.snake.die();
-
+        // Play death sound
+        SFX.play('plorble');
+ 
         // Delay showing the game over screen to allow for animation
         setTimeout(() => this.showGameOverScreen(), 2000);
     }
