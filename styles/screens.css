@@ -141,7 +141,7 @@
 
 .btn:hover .snake-tongue {
     opacity: 1;
-    animation: tongueFlicker 0.15s steps(1) infinite alternate;
+    animation: tongueFlicker 3s steps(10) infinite alternate;
 }
 
 .btn:active {
