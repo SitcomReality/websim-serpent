@@ -93,8 +93,12 @@ export class EyeHighlights {
                 const eyeCenterY = eye.center.y * scaleY;
                 const eyeRadius = eye.radius * scaleX * 0.4;
 
-                const hx = eyeCenterX + highlightPos.x * eye.radius * scaleX;
-                const hy = eyeCenterY + highlightPos.y * eye.radius * scaleY;
+                // bias the highlight forward: scale down UV y and add a small forward offset
+                const biasY = 0.25;
+                const adjHx = highlightPos.x;
+                const adjHy = highlightPos.y * 0.5 + biasY;
+                const hx = eyeCenterX + adjHx * eye.radius * scaleX;
+                const hy = eyeCenterY + adjHy * eye.radius * scaleY;
 
                 ctx.beginPath();
                 ctx.arc(hx, hy, eyeRadius, 0, Math.PI * 2);
@@ -111,8 +115,12 @@ export class EyeHighlights {
             const eyeCenterY = eye.center.y * scaleY;
             const eyeRadius = eye.radius * scaleX * 0.3; // smaller highlight
 
-            const hx = eyeCenterX + uvPos.x * eye.radius * scaleX;
-            const hy = eyeCenterY + uvPos.y * eye.radius * scaleY;
+            // bias sparkles forward: reduce travel amplitude and nudge toward front (bottom)
+            const biasY = 0.25;
+            const adjUvX = uvPos.x;
+            const adjUvY = uvPos.y * 0.5 + biasY;
+            const hx = eyeCenterX + adjUvX * eye.radius * scaleX;
+            const hy = eyeCenterY + adjUvY * eye.radius * scaleY;
 
             const alpha = Math.min(1, p.life / p.maxLife * 2);
             ctx.fillStyle = p.color;
