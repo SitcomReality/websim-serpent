@@ -119,6 +119,17 @@ export class Snake {
         return false;
     }
 
+    // new: return true when head is touching screen edges (uses node radius)
+    checkWallCollision(width, height) {
+        const head = this.getHead();
+        if (!head) return false;
+        if (head.pos.x - head.radius <= 0) return true;
+        if (head.pos.x + head.radius >= width) return true;
+        if (head.pos.y - head.radius <= 0) return true;
+        if (head.pos.y + head.radius >= height) return true;
+        return false;
+    }
+
     render(ctx) {
         if (this.isDead) {
             this.deathAnimation.renderDeathAnimation(ctx);

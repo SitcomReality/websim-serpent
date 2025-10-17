@@ -114,6 +114,11 @@ export class Game {
         if (this.snake.checkSelfCollision()) {
             this.gameOver();
         }
+
+        // new: touching screen edges causes immediate game over
+        if (this.snake.checkWallCollision(this.width, this.height)) {
+            this.gameOver();
+        }
     }
 
     render() {
