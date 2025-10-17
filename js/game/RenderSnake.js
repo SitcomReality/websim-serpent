@@ -79,7 +79,11 @@ export class RenderSnake {
             const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
             ctx.rotate(angle);
             const size = headRadius * 2;
-            ctx.drawImage(this.headImg, -size / 2, -size / 2, size, size);
+            // preserve the sprite's native aspect ratio: use sprite's natural width/height
+            const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
+            const imgH = size; // use computed size as the sprite height
+            const imgW = imgH * aspect;
+            ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
             ctx.restore();
         } else {
             ctx.shadowBlur = 20;
