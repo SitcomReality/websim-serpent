@@ -31,15 +31,9 @@ export class EyeballHighlights {
         const imgCenterY = this.imageHeight / 2;
 
         // Position relative to image center
-        let relX = eyeImageSpace.x - imgCenterX;
+        const relX = eyeImageSpace.x - imgCenterX;
         const relY = eyeImageSpace.y - imgCenterY;
 
-        // Invert the transverse (X) coordinate offset (relX) to correct anatomical orientation 
-        // relative to world view after canvas rotation R=F-PI/2.
-        // This compensates for the fact that R=F-PI/2 rotation maps image X+ (anatomical right) 
-        // to world Y- (up) when F=0, which is anatomically inverted for the desired rendering orientation.
-        relX = -relX;
-        
         // Scale to match rendered size
         const scaledX = relX * scale;
         const scaledY = relY * scale;

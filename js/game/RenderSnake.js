@@ -8,9 +8,6 @@ export class RenderSnake {
         this.headImg = new Image();
         this.headImg.src = '/head.png';
         
-        // Visual adjustment factor for longitudinal stretch beyond 150/125 ratio to make the head look less 'short and fat'
-        this.longitudinalStretchFactor = 1.25; 
-        
         // Initialize eyeball highlights system
         this.eyeballHighlights = new EyeballHighlights();
     }
@@ -97,8 +94,8 @@ export class RenderSnake {
             const intendedHeight = 150;
             const targetTransverseSize = displayHeadRadius * 2; // Target diameter for 125px dimension
             const renderScale = targetTransverseSize / intendedWidth;
-            const imgW = intendedHeight * renderScale * this.longitudinalStretchFactor; // longitudinal length, visually stretched
-            const imgH = targetTransverseSize;         // transverse width
+            const imgW = intendedWidth * renderScale;   // transverse
+            const imgH = intendedHeight * renderScale;  // longitudinal
             
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
             ctx.restore();
