@@ -6,19 +6,19 @@ export class EyeballHighlights {
         // Correcting the user's coordinates - assuming they meant:
         // Left eye: center at (25, 25), radius 25
         // Right eye: center at (100, 25), radius 25
-        this.leftEyeImageSpace = { x: 25, y: 25, radius: 25 };
-        this.rightEyeImageSpace = { x: 100, y: 25, radius: 25 };
+        this.leftEyeImageSpace = { x: 100, y: 75, radius: 25 };
+        this.rightEyeImageSpace = { x: 25, y: 75, radius: 25 };
 
         // Original image dimensions
         this.imageWidth = 125;
-        this.imageHeight = 50;
+        this.imageHeight = 150;
 
         // Spark highlight animation state
         this.sparkHighlights = {
             left: [],
             right: []
         };
-        this.sparkEffectDuration = 800; // ms
+        this.sparkEffectDuration = 1800; // ms
     }
 
     // Transform eye position from image space to world space
