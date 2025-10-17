@@ -90,19 +90,12 @@ export class RenderSnake {
             
             // Calculate draw dimensions based on 125W x 150H aspect ratio 
             // 125px is transverse width; 150px is longitudinal length
-            const nativeWidth = this.headImg.naturalWidth; // Expected 125 (Transverse)
-            const nativeHeight = this.headImg.naturalHeight; // Expected 150 (Longitudinal)
-            const targetTransverseSize = displayHeadRadius * 2; // Target diameter for 125px dimension (Transverse)
-
-            const renderScale = targetTransverseSize / nativeWidth; 
-            
-            // Target Longitudinal size based on 150px dimension
-            const targetLongitudinalSize = nativeHeight * renderScale;
-
-            // If rotation is F - PI/2 (CW), the rotated canvas X axis is transverse, 
-            // and the Y axis is longitudinal.
-            const imgW = targetTransverseSize;      // Should correspond to 125px dimension (Transverse)
-            const imgH = targetLongitudinalSize;    // Should correspond to 150px dimension (Longitudinal)
+            const intendedWidth = 125;
+            const intendedHeight = 150;
+            const targetTransverseSize = displayHeadRadius * 2; // Target diameter for 125px dimension
+            const renderScale = targetTransverseSize / intendedWidth;
+            const imgW = intendedHeight * renderScale; // longitudinal length
+            const imgH = targetTransverseSize;         // transverse width
             
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
             ctx.restore();
