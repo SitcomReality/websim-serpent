@@ -106,7 +106,8 @@
 
 /* Snake body path */
 .btn .snake-body {
-    fill: url(#snakeGradient);
+    /* remove CSS fill override so the SVG's inline fill="url(#...)" works */
+    /* fill: url(#snakeGradient); */
     stroke: none;
     filter: drop-shadow(0 0 15px rgba(78, 205, 200, 0.3)) drop-shadow(0 0 15px rgba(142, 68, 173, 0.3));
     transform-origin: 25% 50%; /* Anchor near the head for tail jiggle */
