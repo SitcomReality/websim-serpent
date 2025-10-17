@@ -71,7 +71,7 @@ export class RenderSnake {
         }
 
         // Head
-        const head = this.snake.getHead();
+        const headNode = this.snake.getHead();
         const headBulge = this.snake.getBulgeFactor(0, timeMs);
         const headRadius = 10 * headBulge;
         // displayHeadRadius is 25% larger than the base headRadius for rendering only
@@ -83,7 +83,7 @@ export class RenderSnake {
         // draw sprite if loaded, otherwise fallback to circle
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
             ctx.save();
-            ctx.translate(head.pos.x, head.pos.y);
+            ctx.translate(headNode.pos.x, headNode.pos.y);
             // sprite faces down; rotate so that the sprite aligns with snake.direction
             const dir = this.snake.direction || { x: 1, y: 0 };
             const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
@@ -96,7 +96,7 @@ export class RenderSnake {
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
 
             // Render eye specular highlights using the dedicated manager
-            this.eyeballHighlights.updateFromSparks(sparks, head.pos);
+            this.eyeballHighlights.updateFromSparks(sparks, headNode.pos);
             this.eyeballHighlights.render(ctx, this.snake.wobble, this.snake.wobbleAmplitude);
 
             ctx.restore();
@@ -105,7 +105,7 @@ export class RenderSnake {
             ctx.shadowColor = '#4ecdc4';
             ctx.fillStyle = '#4ecdc4';
             ctx.beginPath();
-            ctx.arc(head.pos.x, head.pos.y, displayHeadRadius, 0, Math.PI * 2);
+            ctx.arc(headNode.pos.x, headNode.pos.y, displayHeadRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
         }
