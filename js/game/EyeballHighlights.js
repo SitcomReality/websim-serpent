@@ -112,8 +112,8 @@ export class EyeballHighlights {
         const backAngle = forwardAngle + Math.PI; 
 
         // Offset to the side based on wobble sign
-        // This offset is relative to the back direction
-        const sideOffset = wobbleSign * Math.PI * 0.3;
+        // Invert wobbleSign to correct synchronization
+        const sideOffset = -wobbleSign * Math.PI * 0.3;
         const highlightAngle = backAngle + sideOffset;
 
         // Position on the edge of the eye (70% from center)
@@ -123,7 +123,8 @@ export class EyeballHighlights {
 
         // Draw subtle highlight
         const alpha = wobbleAlpha * 0.6;
-        const size = eye.radius * 0.3;
+        // Make size 2x larger: 0.3 -> 0.6
+        const size = eye.radius * 0.6;
 
         const gradient = ctx.createRadialGradient(hx, hy, 0, hx, hy, size);
         gradient.addColorStop(0, `rgba(${baseColor}, ${alpha})`);
