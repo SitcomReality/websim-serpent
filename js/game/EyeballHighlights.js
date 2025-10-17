@@ -2,12 +2,10 @@ import { Vector2D } from '../utils/Vector2D.js';
 
 export class EyeballHighlights {
     constructor() {
-        // Eye positions in the original 125x50 image space (assuming y=0 is top)
-        // Correcting the user's coordinates - assuming they meant:
-        // Left eye: center at (25, 25), radius 25
-        // Right eye: center at (100, 25), radius 25
-        this.leftEyeImageSpace = { x: 100, y: 75, radius: 20 };
-        this.rightEyeImageSpace = { x: 25, y: 75, radius: 20 };
+        // Eye positions in the original 125x150 image space (assuming y=0 is top)
+        // L(25, 75), R(100, 75), Radius 25
+        this.leftEyeImageSpace = { x: 25, y: 75, radius: 25 };
+        this.rightEyeImageSpace = { x: 100, y: 75, radius: 25 };
 
         // Original image dimensions
         this.imageWidth = 125;
@@ -22,7 +20,11 @@ export class EyeballHighlights {
     }
 
     // Transform eye position from image space to world space
-    transformEyeToWorld(eyeImageSpace, headPos, rotation, scale) {
+    // forwardAngle (F) is the direction of movement (World X+ for R=0)
+    transformEyeToWorld(eyeImageSpace, headPos, forwardAngle, scale) {
+        // Calculate the canvas rotation angle R, which transforms native Y+ (down) to forwardAngle (F)
+        const rotation = forwardAngle - Math.PI / 2; 
+        
         // Image space: origin at top-left, y increases downward
         // Our eye coords are relative to image center
         const imgCenterX = this.imageWidth / 2;
@@ -36,7 +38,7 @@ export class EyeballHighlights {
         const scaledX = relX * scale;
         const scaledY = relY * scale;
 
-        // Rotate around head center
+        // Rotate relative position vector using the canvas rotation angle R
         const cos = Math.cos(rotation);
         const sin = Math.sin(rotation);
         const rotatedX = scaledX * cos - scaledY * sin;
@@ -81,36 +83,36 @@ export class EyeballHighlights {
     }
 
     // Render highlights for both eyes
-    render(ctx, headPos, rotation, scale, wobbleSign, wobbleAlpha, timeMs) {
-        const leftEye = this.transformEyeToWorld(this.leftEyeImageSpace, headPos, rotation, scale);
-        const rightEye = this.transformEyeToWorld(this.rightEyeImageSpace, headPos, rotation, scale);
+    render(ctx, headPos, forwardAngle, scale, wobbleSign, wobbleAlpha, timeMs) {
+        const leftEye = this.transformEyeToWorld(this.leftEyeImageSpace, headPos, forwardAngle, scale);
+        const rightEye = this.transformEyeToWorld(this.rightEyeImageSpace, headPos, forwardAngle, scale);
 
-        this.renderEyeHighlights(ctx, leftEye, rotation, wobbleSign, wobbleAlpha, this.sparkHighlights.left, timeMs);
-        this.renderEyeHighlights(ctx, rightEye, rotation, wobbleSign, wobbleAlpha, this.sparkHighlights.right, timeMs);
+        this.renderEyeHighlights(ctx, leftEye, forwardAngle, wobbleSign, wobbleAlpha, this.sparkHighlights.left, timeMs);
+        this.renderEyeHighlights(ctx, rightEye, forwardAngle, wobbleSign, wobbleAlpha, this.sparkHighlights.right, timeMs);
     }
 
-    renderEyeHighlights(ctx, eye, rotation, wobbleSign, wobbleAlpha, sparkHighlights, timeMs) {
+    renderEyeHighlights(ctx, eye, forwardAngle, wobbleSign, wobbleAlpha, sparkHighlights, timeMs) {
         // Render wobble highlights
         if (wobbleAlpha > 0.05) {
-            this.renderWobbleHighlight(ctx, eye, rotation, wobbleSign, wobbleAlpha);
+            this.renderWobbleHighlight(ctx, eye, forwardAngle, wobbleSign, wobbleAlpha);
         }
 
         // Render spark highlights
         for (const highlight of sparkHighlights) {
-            this.renderSparkHighlight(ctx, eye, rotation, highlight, timeMs);
+            this.renderSparkHighlight(ctx, eye, forwardAngle, highlight, timeMs);
         }
     }
 
-    renderWobbleHighlight(ctx, eye, rotation, wobbleSign, wobbleAlpha) {
+    renderWobbleHighlight(ctx, eye, forwardAngle, wobbleSign, wobbleAlpha) {
         // Wobble highlight color (pink from the wobble effect)
         const baseColor = '255,159,243';
 
         // Position highlight on the back side, offset by wobble direction
-        // In natural orientation (mouth down), back is top (negative y in image space)
-        // After rotation, we need to find what "back" means in world space
-        const backAngle = rotation - Math.PI / 2; // Back of head
+        // The back of the head is 180 degrees from the forward angle
+        const backAngle = forwardAngle + Math.PI; 
 
         // Offset to the side based on wobble sign
+        // This offset is relative to the back direction
         const sideOffset = wobbleSign * Math.PI * 0.3;
         const highlightAngle = backAngle + sideOffset;
 
@@ -133,7 +135,7 @@ export class EyeballHighlights {
         ctx.fill();
     }
 
-    renderSparkHighlight(ctx, eye, rotation, highlight, timeMs) {
+    renderSparkHighlight(ctx, eye, forwardAngle, highlight, timeMs) {
         const elapsed = timeMs - highlight.startTime;
         const progress = elapsed / highlight.duration;
 
@@ -143,8 +145,8 @@ export class EyeballHighlights {
         const alpha = (1 - progress) * 0.8;
 
         // Animate from front to back with 3D-like motion
-        // Front of head in natural orientation is bottom (positive y in image space)
-        const frontAngle = rotation + Math.PI / 2;
+        // Front of head direction is forwardAngle (F)
+        const frontAngle = forwardAngle;
 
         // Use easing to simulate 3D motion around the sphere
         // Start near front, sweep around to back

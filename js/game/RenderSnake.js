@@ -80,22 +80,32 @@ export class RenderSnake {
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
             ctx.save();
             ctx.translate(head.pos.x, head.pos.y);
-            // sprite faces down; rotate so that the sprite aligns with snake.direction
+            
             const dir = this.snake.direction || { x: 1, y: 0 };
-            const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
-            ctx.rotate(angle);
-            const size = displayHeadRadius * 2;
-            // preserve the sprite's native aspect ratio: use sprite's natural width/height
-            const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
-            const imgH = size; // use computed size as the sprite height
-            const imgW = imgH * aspect;
+            const forwardAngle = Math.atan2(dir.y, dir.x); // F (Direction of travel)
+            
+            // sprite faces down (Y+); rotation angle R = F - PI/2
+            const rotationAngle = forwardAngle - Math.PI / 2;
+            ctx.rotate(rotationAngle);
+            
+            // Calculate draw dimensions based on 125W x 150H aspect ratio 
+            // 125px is transverse width; 150px is longitudinal length
+            const nativeWidth = this.headImg.naturalWidth; // 125
+            const nativeHeight = this.headImg.naturalHeight; // 150
+            const targetTransverseSize = displayHeadRadius * 2; // Target diameter for 125px dimension
+
+            const renderScale = targetTransverseSize / nativeWidth; 
+            
+            // imgW (X dimension in rotated frame) must be longitudinal (150px scaled)
+            const imgW = nativeHeight * renderScale; 
+            // imgH (Y dimension in rotated frame) must be transverse (125px scaled)
+            const imgH = targetTransverseSize; 
+            
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
             ctx.restore();
             
             // Render eyeball highlights after drawing the head
-            // Calculate scale factor: how much we scaled the image
-            const imageNaturalHeight = this.headImg.naturalHeight;
-            const renderScale = imgH / imageNaturalHeight;
+            // The scale factor based on 125px width
             
             // Wobble highlight alpha for specular
             const wobbleHighlightAlpha = Math.abs(this.snake.wobble) / this.snake.wobbleAmplitude;
@@ -105,7 +115,7 @@ export class RenderSnake {
             this.eyeballHighlights.render(
                 ctx,
                 head.pos,
-                angle + Math.PI / 2, // Convert back to world rotation
+                forwardAngle, // Pass F (the actual direction of travel)
                 renderScale,
                 wobbleSign,
                 wobbleHighlightAlpha,
