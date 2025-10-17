@@ -1,5 +1,4 @@
 import { Vector2D } from '../utils/Vector2D.js';
-import { EyeballHighlights } from './EyeballHighlights.js';
 
 export class RenderSnake {
     constructor(snake) {
@@ -7,10 +6,9 @@ export class RenderSnake {
         // load head sprite once
         this.headImg = new Image();
         this.headImg.src = '/head.png';
-        this.eyeballHighlights = new EyeballHighlights();
     }
 
-    render(ctx, sparks = []) {
+    render(ctx) {
         const nodes = this.snake.chain.nodes;
         const timeMs = this.snake._time * 1000;
 
@@ -88,42 +86,10 @@ export class RenderSnake {
             const imgH = size; // use computed size as the sprite height
             const imgW = imgH * aspect;
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
-            
-            // Update eyeball scale for this render
-            this.eyeballHighlights.updateEyeScale(imgW, imgH);
-            
-            // Calculate reflections
-            const sparkReflection = this.eyeballHighlights.getSparkReflection(
-                new Vector2D(0, 0), 
-                sparks
-            );
-            const wobbleReflection = this.eyeballHighlights.getWobbleReflection(
-                this.snake.wobble,
-                this.snake.wobbleAmplitude
-            );
-            
-            // Render eyeball highlights (in local sprite space)
-            const eyePositions = [
-                { 
-                    localPos: this.eyeballHighlights.leftEyeScaled.copy().sub(new Vector2D(imgW / 2, imgH / 2)),
-                    side: -1 // left
-                },
-                { 
-                    localPos: this.eyeballHighlights.rightEyeScaled.copy().sub(new Vector2D(imgW / 2, imgH / 2)),
-                    side: 1 // right
-                }
-            ];
-            
-            this.eyeballHighlights.renderHighlights(
-                ctx,
-                new Vector2D(0, 0),
-                eyePositions,
-                sparkReflection,
-                wobbleReflection,
-                displayHeadRadius
-            );
-            
             ctx.restore();
+
+            // Render eye highlights on top
+            this.snake.eyeHighlights.render(ctx);
         } else {
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#4ecdc4';
