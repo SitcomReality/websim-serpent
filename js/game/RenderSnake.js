@@ -70,6 +70,8 @@ export class RenderSnake {
         const head = this.snake.getHead();
         const headBulge = this.snake.getBulgeFactor(0, timeMs);
         const headRadius = 10 * headBulge;
+        // displayHeadRadius is 25% larger than the base headRadius for rendering only
+        const displayHeadRadius = headRadius * 1.25;
         // draw sprite if loaded, otherwise fallback to circle
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
             ctx.save();
@@ -78,7 +80,7 @@ export class RenderSnake {
             const dir = this.snake.direction || { x: 1, y: 0 };
             const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
             ctx.rotate(angle);
-            const size = headRadius * 2;
+            const size = displayHeadRadius * 2;
             // preserve the sprite's native aspect ratio: use sprite's natural width/height
             const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
             const imgH = size; // use computed size as the sprite height
@@ -90,7 +92,7 @@ export class RenderSnake {
             ctx.shadowColor = '#4ecdc4';
             ctx.fillStyle = '#4ecdc4';
             ctx.beginPath();
-            ctx.arc(head.pos.x, head.pos.y, headRadius, 0, Math.PI * 2);
+            ctx.arc(head.pos.x, head.pos.y, displayHeadRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
         }
