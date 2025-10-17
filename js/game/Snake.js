@@ -130,14 +130,14 @@ export class Snake {
         return false;
     }
 
-    render(ctx, sparks = []) {
+    render(ctx) {
         if (this.isDead) {
             this.deathAnimation.renderDeathAnimation(ctx);
             return;
         }
 
         this.bulgeManager.cleanup(this._time * 1000);
-        this.renderer.render(ctx, sparks);
+        this.renderer.render(ctx);
     }
 
     setScore(score) {

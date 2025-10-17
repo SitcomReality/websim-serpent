@@ -1,5 +1,5 @@
 import { Vector2D } from '../utils/Vector2D.js';
-import { EyeballHighlights } from '../rendering/EyeballHighlights.js';
+import { EyeballHighlights } from './EyeballHighlights.js';
 
 export class RenderSnake {
     constructor(snake) {
@@ -7,8 +7,6 @@ export class RenderSnake {
         // load head sprite once
         this.headImg = new Image();
         this.headImg.src = '/head.png';
-        
-        // Initialize highlight manager
         this.eyeballHighlights = new EyeballHighlights();
     }
 
@@ -71,41 +69,67 @@ export class RenderSnake {
         }
 
         // Head
-        const headNode = this.snake.getHead();
+        const head = this.snake.getHead();
         const headBulge = this.snake.getBulgeFactor(0, timeMs);
         const headRadius = 10 * headBulge;
         // displayHeadRadius is 25% larger than the base headRadius for rendering only
         const displayHeadRadius = headRadius * 1.25;
-        
-        // 1. Set dynamic eye geometry from the actual drawn sprite size
-        const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
-        const imgH = displayHeadRadius * 2, imgW = imgH * aspect;
-        this.eyeballHighlights.setGeometryByDrawnSize(imgW, imgH);
-        
         // draw sprite if loaded, otherwise fallback to circle
         if (this.headImg && this.headImg.complete && this.headImg.naturalWidth !== 0) {
             ctx.save();
-            ctx.translate(headNode.pos.x, headNode.pos.y);
+            ctx.translate(head.pos.x, head.pos.y);
             // sprite faces down; rotate so that the sprite aligns with snake.direction
             const dir = this.snake.direction || { x: 1, y: 0 };
             const angle = Math.atan2(dir.y, dir.x) - Math.PI / 2;
             ctx.rotate(angle);
             const size = displayHeadRadius * 2;
-            // imgW/imgH computed above to drive both drawing and eye geometry
+            // preserve the sprite's native aspect ratio: use sprite's natural width/height
+            const aspect = this.headImg.naturalWidth / this.headImg.naturalHeight || 1;
+            const imgH = size; // use computed size as the sprite height
+            const imgW = imgH * aspect;
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
-
-            // Render eye specular highlights using the dedicated manager
-            // Pass head position and rotation angle for coordinate transformation
-            this.eyeballHighlights.updateFromSparks(sparks, headNode.pos, angle);
-            this.eyeballHighlights.render(ctx, this.snake.wobble, this.snake.wobbleAmplitude);
-
+            
+            // Update eyeball scale for this render
+            this.eyeballHighlights.updateEyeScale(imgW, imgH);
+            
+            // Calculate reflections
+            const sparkReflection = this.eyeballHighlights.getSparkReflection(
+                new Vector2D(0, 0), 
+                sparks
+            );
+            const wobbleReflection = this.eyeballHighlights.getWobbleReflection(
+                this.snake.wobble,
+                this.snake.wobbleAmplitude
+            );
+            
+            // Render eyeball highlights (in local sprite space)
+            const eyePositions = [
+                { 
+                    localPos: this.eyeballHighlights.leftEyeScaled.copy().sub(new Vector2D(imgW / 2, imgH / 2)),
+                    side: -1 // left
+                },
+                { 
+                    localPos: this.eyeballHighlights.rightEyeScaled.copy().sub(new Vector2D(imgW / 2, imgH / 2)),
+                    side: 1 // right
+                }
+            ];
+            
+            this.eyeballHighlights.renderHighlights(
+                ctx,
+                new Vector2D(0, 0),
+                eyePositions,
+                sparkReflection,
+                wobbleReflection,
+                displayHeadRadius
+            );
+            
             ctx.restore();
         } else {
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#4ecdc4';
             ctx.fillStyle = '#4ecdc4';
             ctx.beginPath();
-            ctx.arc(headNode.pos.x, headNode.pos.y, displayHeadRadius, 0, Math.PI * 2);
+            ctx.arc(head.pos.x, head.pos.y, displayHeadRadius, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
         }

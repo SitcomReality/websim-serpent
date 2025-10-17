@@ -35,7 +35,7 @@ export class Game {
         this.elapsedMs = 0;
         this.foods = [];
         this.ensureFoodCount(1);
-        this.gameOverState = false; // Add game over state
+        this.gameOverState = false;
         this.paused = false;
         
         this.setupInput();
@@ -51,7 +51,6 @@ export class Game {
                 this.onPause();
             }
 
-            // Debug: simulate eating with '+' (main keyboard or numpad)
             const plusPressed = e.key === '+' || e.code === 'NumpadAdd' || (e.key === '=' && e.shiftKey) || e.key === 'Add';
             if (!this.gameOverState && plusPressed) {
                 this.score++;
@@ -60,7 +59,6 @@ export class Game {
                 this.smokeSystem.emitSplash(head.pos.x, head.pos.y);
                 this.smokeSystem.emitSparks(head.pos.x, head.pos.y, 20);
             }
-            // remove absolute direction controls
         };
 
         this.handleKeyUp = (e) => {
@@ -74,7 +72,6 @@ export class Game {
     update(dt) {
         if (!this.running) return;
 
-        // Death animation can still play while paused/game over
         if (this.snake.isDead) {
             this.snake.update(dt, this.width, this.height);
         }
@@ -83,18 +80,15 @@ export class Game {
         
         if (this.paused) return;
 
-        // If not dead, update snake
         if (!this.snake.isDead) {
             this.snake.update(dt, this.width, this.height);
         }
 
-        // If in game over transition, skip game logic
         if (this.gameOverState) return;
 
         this.elapsedMs += dt;
         const target = this.elapsedMs >= 10000 ? 3 : (this.elapsedMs >= 5000 ? 2 : 1);
 
-        // set turning based on keys
         const left = this.keys['arrowleft'] || this.keys['a'];
         const right = this.keys['arrowright'] || this.keys['d'];
         this.snake.setTurning(!!left, !!right);
@@ -102,7 +96,6 @@ export class Game {
 
         this.foods.forEach(f => f.update(dt));
         
-        // Emit trail smoke periodically
         this.smokeTimer += dt;
         if (this.smokeTimer > 50) {
             this.smokeTimer = 0;
@@ -136,7 +129,6 @@ export class Game {
             this.gameOver();
         }
 
-        // new: touching screen edges causes immediate game over
         if (this.snake.checkWallCollision(this.width, this.height)) {
             this.gameOver();
         }
@@ -152,11 +144,10 @@ export class Game {
     }
 
     gameOver() {
-        if (this.gameOverState) return; // Prevent multiple triggers
+        if (this.gameOverState) return;
         this.gameOverState = true;
         this.snake.die();
 
-        // Delay showing the game over screen to allow for animation
         setTimeout(() => this.showGameOverScreen(), 2000);
     }
 
