@@ -4,7 +4,6 @@ import { Vector2D } from '../utils/Vector2D.js';
 import { BulgeManager } from './BulgeManager.js';
 import { DeathAnimation } from './DeathAnimation.js';
 import { RenderSnake } from './RenderSnake.js';
-import { EyeHighlights } from './EyeHighlights.js';
 
 export class Snake {
     constructor(x, y, initialLength = 5) {
@@ -43,7 +42,6 @@ export class Snake {
         this.bulgeManager = new BulgeManager(this);
         this.deathAnimation = new DeathAnimation(this);
         this.renderer = new RenderSnake(this);
-        this.eyeHighlights = new EyeHighlights(this);
     }
 
     setDirection(dir) {
@@ -62,8 +60,6 @@ export class Snake {
             this.deathAnimation.updateDeathAnimation(dt, width, height);
             return;
         }
-
-        this.eyeHighlights.update(dt);
 
         const dtSec = dt / 1000;
         this._time += dtSec;
@@ -101,6 +97,9 @@ export class Snake {
         if (this.isDead) return;
         this.chain.addNode(0, 0);
         this.bulgeManager.recordEat(this._time * 1000);
+        
+        // Trigger eyeball spark highlights
+        this.renderer.triggerSparkHighlights(this._time * 1000);
     }
 
     getHead() {

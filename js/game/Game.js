@@ -126,7 +126,6 @@ export class Game {
                 this.snake.grow();
                 this.smokeSystem.emitSplash(f.pos.x, f.pos.y);
                 this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 20);
-                this.snake.eyeHighlights.triggerSparkleEffect(); // Trigger eye effect
                 return false;
             }
             return true;

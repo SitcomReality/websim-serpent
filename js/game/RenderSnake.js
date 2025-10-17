@@ -1,4 +1,5 @@
 import { Vector2D } from '../utils/Vector2D.js';
+import { EyeballHighlights } from './EyeballHighlights.js';
 
 export class RenderSnake {
     constructor(snake) {
@@ -6,6 +7,9 @@ export class RenderSnake {
         // load head sprite once
         this.headImg = new Image();
         this.headImg.src = '/head.png';
+        
+        // Initialize eyeball highlights system
+        this.eyeballHighlights = new EyeballHighlights();
     }
 
     render(ctx) {
@@ -87,9 +91,26 @@ export class RenderSnake {
             const imgW = imgH * aspect;
             ctx.drawImage(this.headImg, -imgW / 2, -imgH / 2, imgW, imgH);
             ctx.restore();
-
-            // Render eye highlights on top
-            this.snake.eyeHighlights.render(ctx);
+            
+            // Render eyeball highlights after drawing the head
+            // Calculate scale factor: how much we scaled the image
+            const imageNaturalHeight = this.headImg.naturalHeight;
+            const renderScale = imgH / imageNaturalHeight;
+            
+            // Wobble highlight alpha for specular
+            const wobbleHighlightAlpha = Math.abs(this.snake.wobble) / this.snake.wobbleAmplitude;
+            
+            // Update and render eyeball highlights
+            this.eyeballHighlights.update(timeMs);
+            this.eyeballHighlights.render(
+                ctx,
+                head.pos,
+                angle + Math.PI / 2, // Convert back to world rotation
+                renderScale,
+                wobbleSign,
+                wobbleHighlightAlpha,
+                timeMs
+            );
         } else {
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#4ecdc4';
@@ -99,5 +120,11 @@ export class RenderSnake {
             ctx.fill();
             ctx.shadowBlur = 0;
         }
+    }
+    
+    // Method to trigger spark highlights when sparks are emitted
+    triggerSparkHighlights(timeMs) {
+        const head = this.snake.getHead();
+        this.eyeballHighlights.triggerSparkEffect(head.pos, timeMs);
     }
 }
