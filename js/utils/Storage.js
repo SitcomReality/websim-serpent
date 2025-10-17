@@ -1,5 +1,5 @@
 export const Storage = {
-    key: 'fluxserpent_highscore',
+    key: 'serpent_highscore',
     getHighScore() {
         const v = localStorage.getItem(this.key);
         return v ? parseInt(v, 10) : 0;
@@ -8,4 +8,3 @@ export const Storage = {
         localStorage.setItem(this.key, String(score));
     }
 };
-
