@@ -3,11 +3,16 @@ import { MainMenuScreen } from './ui/MainMenuScreen.js';
 import { GameScreen } from './ui/GameScreen.js';
 import { GameOverScreen } from './ui/GameOverScreen.js';
 import { PauseMenuScreen } from './ui/PauseMenuScreen.js';
+import { Profiler } from './debug/Profiler.js';
 
 class App {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
         this.uiContainer = document.getElementById('ui-container');
+        
+        // create profiler and expose for quick access
+        this.profiler = new Profiler(240);
+        window.Profiler = this.profiler;
         
         this.game = null;
         this.currentScreen = null;
@@ -82,11 +87,17 @@ class App {
             const dt = currentTime - (this.lastTime || currentTime);
             this.lastTime = currentTime;
 
+            // profiler frame start
+            this.profiler.startFrame();
+
             if (this.game && this.game.running) {
                 this.game.update(dt);
                 this.game.render();
                 this.gameScreen.updateScore(this.game.getScore());
             }
+
+            // profiler frame end
+            this.profiler.endFrame();
 
             requestAnimationFrame(loop);
         };
