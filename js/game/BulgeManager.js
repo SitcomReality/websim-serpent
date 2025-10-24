@@ -1,6 +1,3 @@
-import { Vector2D } from '../utils/Vector2D.js';
-import { SFX } from '../audio/SFX.js';
-
 export class BulgeManager {
     constructor(snake) {
         this.snake = snake;
@@ -21,7 +18,6 @@ export class BulgeManager {
             const step = Math.floor(center);
             if (step > e.lastStep && step < nodesLength + 2) {
                 e.lastStep = step;
-                SFX.play('nom');
             }
         }
         this.cleanup(currentTimeMs);

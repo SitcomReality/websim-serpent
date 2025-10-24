@@ -19,7 +19,7 @@ export class SmokeSystem {
         this.particles.push(new SmokeParticle(x, y, vel, color, 0.5));
     }
 
-    emitSplash(x, y, count = 20) {
+    emitSplash(x, y, count = 12) {
         const colors = [
             'rgba(255, 107, 107, 0.8)',
             'rgba(78, 205, 196, 0.8)',
@@ -52,7 +52,7 @@ export class SmokeSystem {
         }
     }
 
-    emitSparks(x, y, count = 12) {
+    emitSparks(x, y, count = 8) {
         const colors = [
             '#ff6b6b', '#ffd166', '#6bf2ff', '#9b8cff', '#4ecdc4', '#ff99c8'
         ];

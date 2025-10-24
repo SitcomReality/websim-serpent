@@ -17,9 +17,6 @@ export class Game {
         
         this.resize();
         window.addEventListener('resize', () => this.resize());
-        
-        // local profiler reference (may be undefined in non-browser test env)
-        this.profiler = typeof window !== 'undefined' ? window.Profiler : null;
     }
 
     resize() {
@@ -62,7 +59,7 @@ export class Game {
                 this.snake.grow();
                 const head = this.snake.getHead();
                 this.smokeSystem.emitSplash(head.pos.x, head.pos.y);
-                this.smokeSystem.emitSparks(head.pos.x, head.pos.y, 20);
+                this.smokeSystem.emitSparks(head.pos.x, head.pos.y, 10);
             }
             // remove absolute direction controls
         };
@@ -80,22 +77,16 @@ export class Game {
 
         // Death animation can still play while paused/game over
         if (this.snake.isDead) {
-            if (this.profiler) { this.profiler.markStart('deathAnim'); }
             this.snake.update(dt, this.width, this.height);
-            if (this.profiler) { this.profiler.markEnd('deathAnim'); }
         }
         
-        if (this.profiler) { this.profiler.markStart('smokeUpdate'); }
         this.smokeSystem.update(dt);
-        if (this.profiler) { this.profiler.markEnd('smokeUpdate'); }
         
         if (this.paused) return;
 
         // If not dead, update snake
         if (!this.snake.isDead) {
-            if (this.profiler) { this.profiler.markStart('snakeUpdate'); }
             this.snake.update(dt, this.width, this.height);
-            if (this.profiler) { this.profiler.markEnd('snakeUpdate'); }
         }
 
         // If in game over transition, skip game logic
@@ -110,15 +101,13 @@ export class Game {
         this.snake.setTurning(!!left, !!right);
         this.snake.setScore(this.score);
 
-        if (this.profiler) { this.profiler.markStart('foodsUpdateLoop'); }
         this.foods.forEach(f => f.update(dt));
-        if (this.profiler) { this.profiler.markEnd('foodsUpdateLoop'); }
         
         // Emit trail smoke periodically
         this.smokeTimer += dt;
-        if (this.smokeTimer > 50) {
+        if (this.smokeTimer > 80) {
             this.smokeTimer = 0;
-            for (let i = 1; i < this.snake.chain.nodes.length; i += 2) {
+            for (let i = 1; i < this.snake.chain.nodes.length; i += 3) {
                 const node = this.snake.chain.nodes[i];
                 const velocity = this.snake.chain.getVelocityAt(i);
                 if (velocity.mag() > 0.5) {
@@ -128,38 +117,27 @@ export class Game {
         }
 
         const head = this.snake.getHead();
-        if (this.profiler) { this.profiler.markStart('foodCollisionLoop'); }
         this.foods = this.foods.filter(f => {
             if (f.isExpired()) { 
                 this.smokeSystem.emitPoof(f.pos.x, f.pos.y); 
-                // measure sfx play cost
-                if (this.profiler) this.profiler.markStart('sfx_bubbledown');
                 SFX.play('bubbledown');
-                if (this.profiler) this.profiler.markEnd('sfx_bubbledown');
                 return false;
             }
             if (head.pos.dist(f.pos) < head.radius + f.radius) {
                 this.score++;
                 this.snake.grow();
-                if (this.profiler) this.profiler.markStart('sfx_omnom');
                 SFX.play('omnom');
-                if (this.profiler) this.profiler.markEnd('sfx_omnom');
                 this.smokeSystem.emitSplash(f.pos.x, f.pos.y);
-                this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 20);
+                this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 10);
                 return false;
             }
             return true;
         });
-        if (this.profiler) { this.profiler.markEnd('foodCollisionLoop'); }
-        if (this.profiler) { this.profiler.markStart('ensureFoodCount'); }
         this.ensureFoodCount(target);
-        if (this.profiler) { this.profiler.markEnd('ensureFoodCount'); }
 
-        if (this.profiler) { this.profiler.markStart('selfCollision'); }
         if (this.snake.checkSelfCollision()) {
             this.gameOver();
         }
-        if (this.profiler) { this.profiler.markEnd('selfCollision'); }
 
         // new: touching screen edges causes immediate game over
         if (this.snake.checkWallCollision(this.width, this.height)) {
@@ -171,17 +149,9 @@ export class Game {
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        if (this.profiler) { this.profiler.markStart('smokeRender'); }
         this.smokeSystem.render(this.ctx);
-        if (this.profiler) { this.profiler.markEnd('smokeRender'); }
-
-        if (this.profiler) { this.profiler.markStart('foodsRender'); }
         this.foods.forEach(f => f.render(this.ctx));
-        if (this.profiler) { this.profiler.markEnd('foodsRender'); }
-
-        if (this.profiler) { this.profiler.markStart('snakeRender'); }
         this.snake.render(this.ctx);
-        if (this.profiler) { this.profiler.markEnd('snakeRender'); }
     }
 
     gameOver() {
@@ -234,10 +204,7 @@ export class Game {
         while (this.foods.length < target) {
             const f = Food.spawn(this.width, this.height);
             this.foods.push(f);
-            // profile bubble spawn audio cost
-            if (this.profiler) this.profiler.markStart('sfx_bubbleup');
             SFX.play('bubbleup');
-            if (this.profiler) this.profiler.markEnd('sfx_bubbleup');
         }
     }
 }
