@@ -24,10 +24,6 @@ export class PauseMenuScreen extends Screen {
                         ${snakeButtonSVG('snakeGradient_mute_sfx')}
                         <span>Mute SFX</span>
                     </button>
-                    <button class="btn" id="mute-music-btn">
-                        ${snakeButtonSVG('snakeGradient_mute_music')}
-                        <span>Mute Music</span>
-                    </button>
                     <button class="btn btn-secondary" id="quit-btn">
                         ${snakeButtonSVG('snakeGradient_quit')}
                         <span>Quit</span>
@@ -43,6 +39,6 @@ export class PauseMenuScreen extends Screen {
             SFX.toggleMute();
             sfxBtn.querySelector('span').textContent = SFX.isMuted() ? 'Unmute SFX' : 'Mute SFX';
         });
-        this.element.querySelector('#mute-music-btn').addEventListener('click', () => {});
     }
 }
+
