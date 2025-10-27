@@ -37,6 +37,9 @@ export class GameOverScreen extends Screen {
                     ${snakeButtonSVG('snakeGradient_gameover')}
                     <span>Main Menu</span>
                 </button>
+                <div class="splash-footer">
+                    <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
+                </div>
             </div>
         `;
 
