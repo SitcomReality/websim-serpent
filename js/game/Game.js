@@ -214,10 +214,17 @@ export class Game {
     }
 
     ensureFoodCount(target) {
+        // Defensive checks: ensure foods array exists and we have valid dimensions
+        if (!this.foods) this.foods = [];
+        const w = this.width || this.canvas && this.canvas.width || window.innerWidth;
+        const h = this.height || this.canvas && this.canvas.height || window.innerHeight;
+
         while (this.foods.length < target) {
-            const f = Food.spawn(this.width, this.height);
+            const f = Food.spawn(w, h);
             this.foods.push(f);
-            this.validation.foodSpawned();
+            if (this.validation && typeof this.validation.foodSpawned === 'function') {
+                this.validation.foodSpawned();
+            }
             SFX.play('bubbleup');
         }
     }
