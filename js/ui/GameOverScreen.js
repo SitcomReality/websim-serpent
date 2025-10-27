@@ -29,30 +29,32 @@ export class GameOverScreen extends Screen {
 
     render() {
         this.element.innerHTML = `
-            <div class="screen-content game-over-content">
-                <div class="game-over-left">
-                    <h1 class="title">Game Over</h1>
-                    <div class="score-display">Score: <span id="final-score">0</span></div>
-                    <div class="high-score">
-                        Personal Best: <span id="high-score-value">0</span>
-                        <span id="new-high" class="new-high-badge" style="display:none;">New!</span>
+            <div class="screen-content game-over-wrapper">
+                <h1 class="title" style="text-align:center; margin-bottom:1rem;">Game Over</h1>
+                <div class="game-over-content">
+                    <div class="game-over-left">
+                        <div class="score-display">Score: <span id="final-score">0</span></div>
+                        <div class="high-score">
+                            Personal Best: <span id="high-score-value">0</span>
+                            <span id="new-high" class="new-high-badge" style="display:none;">New!</span>
+                        </div>
+                        <div id="prev-high-wrap" class="prev-high" style="display:none;">
+                            Previous: <span id="prev-high">0</span>
+                        </div>
+                        <button class="btn" id="menu-btn">
+                            ${snakeButtonSVG('snakeGradient_gameover')}
+                            <span>Main Menu</span>
+                        </button>
                     </div>
-                    <div id="prev-high-wrap" class="prev-high" style="display:none;">
-                        Previous: <span id="prev-high">0</span>
-                    </div>
-                    <button class="btn" id="menu-btn">
-                        ${snakeButtonSVG('snakeGradient_gameover')}
-                        <span>Main Menu</span>
-                    </button>
-                    <div class="splash-footer">
-                        <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
+                    <div class="game-over-right">
+                        <h2 class="subtitle">Top 10 Global</h2>
+                        <div id="game-over-scores-list" class="high-scores-list">
+                            Loading...
+                        </div>
                     </div>
                 </div>
-                <div class="game-over-right">
-                    <h2 class="subtitle">Top 10 Global</h2>
-                    <div id="game-over-scores-list" class="high-scores-list">
-                        Loading...
-                    </div>
+                <div class="splash-footer" style="margin-top:2rem; justify-content:center;">
+                    <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
                 </div>
             </div>
         `;
@@ -82,4 +84,3 @@ export class GameOverScreen extends Screen {
         this.scoreListElement.innerHTML = listHtml;
     }
 }
-
