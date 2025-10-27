@@ -1,4 +1,4 @@
-export const room = new (window.websim && window.websim.WebsimSocket ? window.websim.WebsimSocket : class {
+export const room = new (window.WebsimSocket || (window.websim && window.websim.WebsimSocket) || class {
     // Fallback no-op stub for environments where window.websim is not available.
     constructor() {
         console.warn('WebsimSocket not available on window.websim; using stub.');
