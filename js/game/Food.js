@@ -18,9 +18,11 @@ export class Food {
         const pulse = Math.sin(this.pulsePhase) * 0.15 + 1;
         const shrink = t > 0.9 ? 1 - (t - 0.9) / 0.1 : 1;
         const radius = this.radius * pulse * Math.max(0, shrink);
+        // Hue cycles over time while saturation fades with age (preserve previous saturation/lightness behavior)
+        const hue = Math.floor((this.ageMs * 0.02) % 360); // slow hue sweep based on age
         const s = 90 * (1 - t), l = 60 - 10 * t;
-        ctx.shadowBlur = 15; ctx.shadowColor = `hsl(0, ${s}%, ${l}%)`;
-        ctx.fillStyle = `hsl(0, ${s}%, ${l}%)`;
+        ctx.shadowBlur = 15; ctx.shadowColor = `hsl(${hue}, ${s}%, ${l}%)`;
+        ctx.fillStyle = `hsl(${hue}, ${s}%, ${l}%)`;
         ctx.beginPath(); ctx.arc(this.pos.x, this.pos.y, radius, 0, Math.PI * 2); ctx.fill();
         ctx.shadowBlur = 0;
     }
