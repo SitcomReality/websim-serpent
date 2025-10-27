@@ -29,9 +29,9 @@ export class GameOverScreen extends Screen {
 
     render() {
         this.element.innerHTML = `
-            <div class="screen-content game-over-content">
-                <h1 class="title">Game Over</h1>
-                <div class="game-over-main">
+            <div class="screen-content game-over-content-outer">
+                <h1 class="title" style="text-align:center; margin-bottom:1.5rem;">Game Over</h1>
+                <div class="game-over-content">
                     <div class="game-over-left">
                         <div class="score-display">Score: <span id="final-score">0</span></div>
                         <div class="high-score">
@@ -53,7 +53,7 @@ export class GameOverScreen extends Screen {
                         </div>
                     </div>
                 </div>
-                <div class="splash-footer">
+                <div class="splash-footer" style="margin-top:2rem; justify-content:center;">
                     <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
                 </div>
             </div>
