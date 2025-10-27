@@ -6,6 +6,7 @@ export class Food {
         this.radius = 16;
         this.pulsePhase = Math.random() * Math.PI * 2;
         this.ageMs = 0; this.lifeMs = 15000;
+        this.hueOffset = Math.floor(Math.random() * 360); // randomize initial hue
     }
 
     update(dt) {
@@ -19,7 +20,7 @@ export class Food {
         const shrink = t > 0.9 ? 1 - (t - 0.9) / 0.1 : 1;
         const radius = this.radius * pulse * Math.max(0, shrink);
         // Hue cycles over time while saturation fades with age (preserve previous saturation/lightness behavior)
-        const hue = Math.floor((this.ageMs * 0.02) % 360); // slow hue sweep based on age
+        const hue = Math.floor((this.hueOffset + this.ageMs * 0.02) % 360); // start at randomized hue and sweep
         const s = 90 * (1 - t), l = 60 - 10 * t;
         ctx.shadowBlur = 15; ctx.shadowColor = `hsl(${hue}, ${s}%, ${l}%)`;
         ctx.fillStyle = `hsl(${hue}, ${s}%, ${l}%)`;
