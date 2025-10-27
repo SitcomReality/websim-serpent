@@ -195,6 +195,78 @@
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
+.game-over-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: flex-start;
+    gap: 2rem;
+    width: min(90vw, 1200px);
+}
+
+.game-over-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.game-over-right {
+    flex: 1;
+    max-width: 400px;
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+}
+
+.game-over-right .subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.high-scores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 1rem; /* for scrollbar */
+}
+
+.high-score-entry {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    font-size: 1.1rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    transition: background 0.2s ease;
+}
+.high-score-entry:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.high-score-entry .rank {
+    font-weight: 700;
+    color: #aaa;
+    text-align: right;
+}
+.high-score-entry .username {
+    font-weight: 400;
+    color: #eee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.high-score-entry .score {
+    font-weight: 700;
+    color: #4ecdc4;
+}
+
 .game-hud {
     position: absolute;
     top: 1.5rem;

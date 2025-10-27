@@ -3,6 +3,9 @@ import { MainMenuScreen } from './ui/MainMenuScreen.js';
 import { GameScreen } from './ui/GameScreen.js';
 import { GameOverScreen } from './ui/GameOverScreen.js';
 import { PauseMenuScreen } from './ui/PauseMenuScreen.js';
+import { HighScoresScreen } from './ui/HighScoresScreen.js';
+import { room } from './utils/Database.js'; // initialize connection
+import { HighScores } from './utils/HighScores.js';
 
 class App {
     constructor() {
@@ -18,7 +21,10 @@ class App {
     }
 
     initScreens() {
-        this.mainMenuScreen = new MainMenuScreen(() => this.startGame());
+        this.mainMenuScreen = new MainMenuScreen(
+            () => this.startGame(),
+            () => this.showHighScores()
+        );
         this.gameScreen = new GameScreen(() => this.togglePause());
         this.gameOverScreen = new GameOverScreen(() => this.showMainMenu());
         this.pauseMenuScreen = new PauseMenuScreen(
@@ -30,6 +36,15 @@ class App {
         this.gameScreen.mount(this.uiContainer);
         this.gameOverScreen.mount(this.uiContainer);
         this.pauseMenuScreen.mount(this.uiContainer);
+
+        this.highScoresScreen = new HighScoresScreen(() => this.showMainMenu());
+        this.highScoresScreen.mount(this.uiContainer);
+
+        // Subscribe screens to high score updates
+        HighScores.subscribe(scores => {
+            this.gameOverScreen.updateHighScores(scores);
+            this.highScoresScreen.updateHighScores(scores);
+        });
     }
 
     showScreen(screen) {
@@ -63,7 +78,7 @@ class App {
         if (this.game.isPaused()) {
             this.game.resume();
             this.pauseMenuScreen.hide();
-            this.gameScreen.show();
+            // this.gameScreen.show(); // showScreen will handle this
             this.showScreen(this.gameScreen);
         } else {
             this.game.pause();
@@ -75,6 +90,10 @@ class App {
     handleGameOver(result) {
         this.gameOverScreen.setScore(result.score, result.highScore, result.isNewHigh, result.prevHighScore);
         this.showScreen(this.gameOverScreen);
+    }
+
+    showHighScores() {
+        this.showScreen(this.highScoresScreen);
     }
 
     startGameLoop() {

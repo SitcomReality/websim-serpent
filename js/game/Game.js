@@ -4,6 +4,8 @@ import { SmokeSystem } from '../effects/SmokeSystem.js';
 import { Vector2D } from '../utils/Vector2D.js';
 import { Storage } from '../utils/Storage.js';
 import { SFX } from '../audio/SFX.js';
+import { Validation } from './Validation.js';
+import { HighScores } from '../utils/HighScores.js';
 
 export class Game {
     constructor(canvas, onGameOver, onPause) {
@@ -38,6 +40,7 @@ export class Game {
         this.ensureFoodCount(1);
         this.gameOverState = false; // Add game over state
         this.paused = false;
+        this.validation = new Validation();
         
         this.setupInput();
     }
@@ -121,6 +124,7 @@ export class Game {
             if (f.isExpired()) { 
                 this.smokeSystem.emitPoof(f.pos.x, f.pos.y); 
                 SFX.play('bubbledown');
+                this.validation.foodDespawned();
                 return false;
             }
             if (head.pos.dist(f.pos) < head.radius + f.radius) {
@@ -129,6 +133,7 @@ export class Game {
                 SFX.play('omnom');
                 this.smokeSystem.emitSplash(f.pos.x, f.pos.y);
                 this.smokeSystem.emitSparks(f.pos.x, f.pos.y, 10);
+                this.validation.foodEaten();
                 return false;
             }
             return true;
@@ -170,6 +175,14 @@ export class Game {
         const prevHigh = Storage.getHighScore();
         const isNew = this.score > prevHigh;
         if (isNew) Storage.setHighScore(this.score);
+
+        // Validate and submit score to global leaderboard
+        if (this.validation.validateScore(this.score)) {
+            HighScores.submitScore(this.score).catch(err => {
+                console.error("Failed to submit high score:", err);
+            });
+        }
+
         this.onGameOver({ 
             score: this.score, 
             highScore: Storage.getHighScore(), 
@@ -204,6 +217,7 @@ export class Game {
         while (this.foods.length < target) {
             const f = Food.spawn(this.width, this.height);
             this.foods.push(f);
+            this.validation.foodSpawned();
             SFX.play('bubbleup');
         }
     }

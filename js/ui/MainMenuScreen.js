@@ -2,9 +2,10 @@ import { Screen } from './Screen.js';
 import { snakeButtonSVG } from './SnakeButtonSVG.js';
 
 export class MainMenuScreen extends Screen {
-    constructor(onStartGame) {
+    constructor(onStartGame, onShowHighScores) {
         super('main-menu');
         this.onStartGame = onStartGame;
+        this.onShowHighScores = onShowHighScores;
         this.render();
     }
 
@@ -17,6 +18,10 @@ export class MainMenuScreen extends Screen {
                     ${snakeButtonSVG('snakeGradient_main')}
                     <span>Start Game</span>
                 </button>
+                <button class="btn btn-secondary" id="high-scores-btn">
+                    ${snakeButtonSVG('snakeGradient_scores')}
+                    <span>High Scores</span>
+                </button>
                 <div class="splash-footer">
                     <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
                 </div>
@@ -25,6 +30,9 @@ export class MainMenuScreen extends Screen {
 
         this.element.querySelector('#start-btn').addEventListener('click', () => {
             this.onStartGame();
+        });
+        this.element.querySelector('#high-scores-btn').addEventListener('click', () => {
+            this.onShowHighScores();
         });
     }
 }

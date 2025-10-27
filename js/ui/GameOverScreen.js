@@ -6,6 +6,7 @@ export class GameOverScreen extends Screen {
         super('game-over');
         this.onReturnToMenu = onReturnToMenu;
         this.score = 0;
+        this.highScores = [];
         this.render();
     }
 
@@ -21,30 +22,64 @@ export class GameOverScreen extends Screen {
         if (isNewHigh) this.element.querySelector('#prev-high').textContent = prevHighScore;
     }
 
+    updateHighScores(scores) {
+        this.highScores = scores.slice(0, 10); // only top 10
+        this.renderHighScores();
+    }
+
     render() {
         this.element.innerHTML = `
-            <div class="screen-content">
-                <h1 class="title">Game Over</h1>
-                <div class="score-display">Score: <span id="final-score">0</span></div>
-                <div class="high-score">
-                    High Score: <span id="high-score-value">0</span>
-                    <span id="new-high" class="new-high-badge" style="display:none;">New High!</span>
+            <div class="screen-content game-over-content">
+                <div class="game-over-left">
+                    <h1 class="title">Game Over</h1>
+                    <div class="score-display">Score: <span id="final-score">0</span></div>
+                    <div class="high-score">
+                        Personal Best: <span id="high-score-value">0</span>
+                        <span id="new-high" class="new-high-badge" style="display:none;">New!</span>
+                    </div>
+                    <div id="prev-high-wrap" class="prev-high" style="display:none;">
+                        Previous: <span id="prev-high">0</span>
+                    </div>
+                    <button class="btn" id="menu-btn">
+                        ${snakeButtonSVG('snakeGradient_gameover')}
+                        <span>Main Menu</span>
+                    </button>
+                    <div class="splash-footer">
+                        <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
+                    </div>
                 </div>
-                <div id="prev-high-wrap" class="prev-high" style="display:none;">
-                    Previous: <span id="prev-high">0</span>
-                </div>
-                <button class="btn" id="menu-btn">
-                    ${snakeButtonSVG('snakeGradient_gameover')}
-                    <span>Main Menu</span>
-                </button>
-                <div class="splash-footer">
-                    <img src="/sitcomreality.png" alt="sitcomreality" class="sr-logo" width="250" height="70" />
+                <div class="game-over-right">
+                    <h2 class="subtitle">Top 10 Global</h2>
+                    <div id="game-over-scores-list" class="high-scores-list">
+                        Loading...
+                    </div>
                 </div>
             </div>
         `;
-
+        
+        this.scoreListElement = this.element.querySelector('#game-over-scores-list');
         this.element.querySelector('#menu-btn').addEventListener('click', () => {
             this.onReturnToMenu();
         });
+
+        this.renderHighScores();
+    }
+
+    renderHighScores() {
+        if (!this.scoreListElement) return;
+        if (this.highScores.length === 0) {
+            this.scoreListElement.innerHTML = `<p>No scores yet.</p>`;
+            return;
+        }
+        
+        const listHtml = this.highScores.map((entry, index) => `
+            <div class="high-score-entry">
+                <span class="rank">${index + 1}.</span>
+                <span class="username">${entry.username}</span>
+                <span class="score">${entry.score}</span>
+            </div>
+        `).join('');
+        this.scoreListElement.innerHTML = listHtml;
     }
 }
+
