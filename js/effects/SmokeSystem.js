@@ -10,7 +10,7 @@ export class SmokeSystem {
 
     emitWisp(x, y, velocity) {
         const spread = 0.5;
-        const vel = new Vector2(
+        const vel = new Vector2D(
             velocity.x * 0.25 + (Math.random() - 0.5) * spread,
             velocity.y * 0.25 + (Math.random() - 0.5) * spread
         );
@@ -36,7 +36,7 @@ export class SmokeSystem {
         for (let i = 0; i < actualCount; i++) {
             const angle = (i / actualCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
             const speed = 1.6 + Math.random() * 2.2; // slightly reduced speeds
-            const vel = new Vector2(
+            const vel = new Vector2D(
                 Math.cos(angle) * speed,
                 Math.sin(angle) * speed
             );
@@ -55,7 +55,7 @@ export class SmokeSystem {
         const actual = Math.max(6, Math.floor(count * 0.5));
         for (let i = 0; i < actual; i++) {
             const a = Math.random() * Math.PI * 2, s = 1.0 + Math.random() * 1.6;
-            const vel = new Vector2(Math.cos(a) * s, Math.sin(a) * s);
+            const vel = new Vector2D(Math.cos(a) * s, Math.sin(a) * s);
             this.particles.push(new SmokeParticle(x, y, vel, colors[0], 0.7 + Math.random() * 0.45));
         }
     }
@@ -68,7 +68,7 @@ export class SmokeSystem {
         for (let i = 0; i < actual; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 2 + Math.random() * 3; // slightly reduced speeds
-            const vel = new Vector2(Math.cos(angle) * speed, Math.sin(angle) * speed);
+            const vel = new Vector2D(Math.cos(angle) * speed, Math.sin(angle) * speed);
             const color = colors[Math.floor(Math.random() * colors.length)];
             // spark sizes adjusted slightly smaller
             this.sparks.push(new SparkParticle(x, y, vel, color, 0.18 + Math.random() * 0.18));
