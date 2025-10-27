@@ -201,7 +201,8 @@
     justify-content: space-around;
     align-items: flex-start;
     gap: 2rem;
-    width: min(90vw, 1200px);
+    width: 100%;
+    max-width: 100%;
 }
 
 .game-over-left {
