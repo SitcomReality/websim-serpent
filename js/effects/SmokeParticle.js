@@ -6,32 +6,41 @@ export class SmokeParticle {
         this.velocity = velocity;
         this.color = color;
         this.size = size;
-        // shorter lives for fewer on-screen particles and faster fade
-        this.maxLife = 0.7 + Math.random() * 0.6; // 0.7 - 1.3s
-        this.life = this.maxLife;
-        // faster decay to reduce overlap
-        this.decay = 0.9 + Math.random() * 1.4; // multiplier per second
+        // Shorter life and slightly randomized to reduce long-lived buildup
+        this.life = 0.6 + Math.random() * 0.6; 
+        this.maxLife = this.life;
+        // Lower per-particle decay variation for stable counts
+        this.decay = 0.6 / this.life;
+        // reduce extra work flags
+        this.alphaMult = 0.6;
     }
 
     update(dt) {
-        // dt is ms; convert to seconds
-        const dtSec = dt / 1000;
-        this.pos.add(this.velocity.copy().mult(dtSec));
-        // simple damping
-        this.velocity.mult(0.97);
-        this.life -= this.decay * dtSec;
-        this.size *= 1 + 0.02 * dtSec;
+        // cheaper physics: integrate position with small friction
+        this.pos.add(this.velocity);
+        this.velocity.mult(0.94);
+        this.life -= dt * 0.0015; // faster decay to reduce accumulation
+        // modest growth
+        this.size *= 1.01;
         return this.life > 0;
     }
 
     render(ctx) {
-        // Cheap circle-based render (no gradients/shadow) for performance
-        const alpha = Math.max(0, Math.min(1, this.life / this.maxLife));
-        ctx.globalAlpha = alpha * 0.55;
+        const alpha = Math.max(0, (this.life / this.maxLife) * this.alphaMult);
+
+        // Simplified rendering: single arc with small shadow instead of expensive radial gradients
+        ctx.save();
+        // modest, cheaper shadow (low blur)
+        ctx.shadowBlur = Math.min(10, 6 * (this.size));
+        ctx.shadowColor = this.color;
+        ctx.globalAlpha = alpha;
+
+        // Use simple fill circle which is much cheaper than gradients
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, Math.max(1, this.size * 8), 0, Math.PI * 2);
+        ctx.arc(this.pos.x, this.pos.y, this.size * 10, 0, Math.PI * 2);
         ctx.fill();
-        ctx.globalAlpha = 1;
+
+        ctx.restore();
     }
 }
