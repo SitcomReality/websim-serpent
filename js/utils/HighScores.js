@@ -27,6 +27,8 @@ export const HighScores = {
     },
 
     submitScore: async (score) => {
+        // don't record zero or negative scores
+        if (!score || score <= 0) return;
         const currentUser = await window.websim.getCurrentUser();
         const username = currentUser.username;
 
