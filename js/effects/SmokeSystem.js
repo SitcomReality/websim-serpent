@@ -7,8 +7,8 @@ export class SmokeSystem {
         this.particles = [];
         this.sparks = [];
         // caps to prevent runaway cost
-        this.maxParticles = 120;
-        this.maxSparks = 80;
+        this.maxParticles = 80; // reduced from 120
+        this.maxSparks = 60;    // reduced from 80
         // accumulator to help throttle wisps if too many present
         this.wispThrottle = 0;
     }
@@ -16,22 +16,29 @@ export class SmokeSystem {
     emitWisp(x, y, velocity) {
         // Reduce wisps for slow movement; scale emission based on velocity magnitude
         const speed = velocity.mag();
-        if (speed < 0.4) return; // don't emit for very slow movement
+        // require noticeably more movement to emit
+        if (speed < 0.6) return; // raised threshold from 0.4 -> 0.6
 
         // throttle based on recent emissions to avoid bursts
-        this.wispThrottle += speed * 0.3;
-        if (this.wispThrottle < 1) return;
+        // make throttle accumulate more slowly and require larger threshold
+        this.wispThrottle += speed * 0.15; // lowered increment to make bursts rarer
+        if (this.wispThrottle < 2) return; // require more accumulated motion
         this.wispThrottle = 0;
 
-        const spread = 0.3;
+        // Random chance to skip emission to further reduce particle churn
+        if (Math.random() < 0.5) return;
+
+        // much tighter spread and smaller velocity to create lighter wisps
+        const spread = 0.15;
         const vel = new Vector2D(
-            velocity.x * 0.25 + (Math.random() - 0.5) * spread,
-            velocity.y * 0.25 + (Math.random() - 0.5) * spread
+            velocity.x * 0.15 + (Math.random() - 0.5) * spread,
+            velocity.y * 0.15 + (Math.random() - 0.5) * spread
         );
 
         // use a subtle, slightly desaturated color and smaller size for wisps
-        const color = 'rgba(200, 200, 255, 0.22)';
-        this.particles.push(new SmokeParticle(x, y, vel, color, 0.6, 'wisp'));
+        const color = 'rgba(200, 200, 255, 0.18)';
+        // produce smaller wisps
+        this.particles.push(new SmokeParticle(x, y, vel, color, 0.45, 'wisp'));
 
         // trim to cap
         if (this.particles.length > this.maxParticles) {
